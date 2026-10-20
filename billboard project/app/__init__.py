@@ -26,6 +26,9 @@ def create_app(config_class=DevelopmentConfig):
     from app.routes.advertisements import ads_bp
     app.register_blueprint(ads_bp)
 
+    from app.routes.billboard import billboard_bp
+    app.register_blueprint(billboard_bp)
+
     # Global error handlers
     @app.errorhandler(400)
     def bad_request(error):
