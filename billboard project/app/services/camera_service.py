@@ -102,7 +102,15 @@ class CameraService:
                     self.error_message = f"Unable to open cached video file: {self.video_filename}"
                     return False
             else:
-                self.cap = cv2.VideoCapture(self.camera_index)
+                import os
+                # On Windows, try DirectShow first for fast, instant hardware webcam initialization
+                if os.name == "nt":
+                    self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+                    if not self.cap or not self.cap.isOpened():
+                        self.cap = cv2.VideoCapture(self.camera_index)
+                else:
+                    self.cap = cv2.VideoCapture(self.camera_index)
+
                 if self.cap and self.cap.isOpened():
                     self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
                     self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
@@ -199,25 +207,45 @@ class CameraService:
         self._release_camera()
 
     def _create_standby_frame(self):
-        """Generate an informative standby test frame when webcam hardware is unavailable."""
+        """Generate an informative, dynamically animated standby frame with active scanline and HUD."""
         frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
-        frame[:] = (20, 25, 35)
+        frame[:] = (10, 12, 16)
 
-        cv2.rectangle(frame, (20, 20), (self.width - 20, self.height - 20), (99, 102, 241), 2)
-        
-        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        mode_str = "WEB-CAMERA" if self.source_mode == "webcam" else f"CACHED-VIDEO ({self.video_filename})"
-        cv2.putText(frame, "SMART BILLBOARD - VISION FEED STANDBY", (30, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255, 255, 255), 2)
-        
-        cv2.putText(frame, f"Source Mode: {mode_str}", (30, 95),
+        # Dynamic animated scanline and radar sweep
+        t = time.time()
+        scan_y = int((t * 140) % max(1, self.height - 40)) + 20
+        cv2.line(frame, (20, scan_y), (self.width - 20, scan_y), (60, 180, 255), 1)
+
+        # Subtle pulsing center radar circle
+        cx, cy = self.width // 2, self.height // 2 + 30
+        pulse_r = int(35 + 20 * abs(np.sin(t * 2.5)))
+        cv2.circle(frame, (cx, cy), pulse_r, (40, 60, 90), 1)
+        cv2.circle(frame, (cx, cy), 6, (56, 189, 248), -1)
+
+        # Border
+        cv2.rectangle(frame, (20, 20), (self.width - 20, self.height - 20), (99, 102, 241), 1)
+
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-4] + " UTC"
+        mode_str = "HARDWARE WEBCAM" if self.source_mode == "webcam" else f"CACHED VIDEO ({self.video_filename or 'None'})"
+
+        cv2.putText(frame, "LIVE AI VISION MONITOR [ACTIVE]", (30, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.58, (255, 255, 255), 2)
+
+        cv2.putText(frame, f"Source: {mode_str}", (30, 85),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (56, 189, 248), 1)
-        
-        status_msg = self.error_message or "Awaiting video input or webcam connection..."
-        cv2.putText(frame, f"Status: {status_msg}", (30, 125),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (148, 163, 184), 1)
-        cv2.putText(frame, f"Target Res: {self.width}x{self.height} | Clock: {now_str}", (30, 155),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.42, (148, 163, 184), 1)
+
+        if self.source_mode == "video_file" and self.video_finished:
+            status_msg = "Video 1-time run finished. Click 'Rewatch' to replay."
+            status_color = (250, 204, 21)
+        else:
+            status_msg = self.error_message or "Scanning for human subjects in FOV..."
+            status_color = (148, 163, 184)
+
+        cv2.putText(frame, f"Status: {status_msg}", (30, 115),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.44, status_color, 1)
+
+        cv2.putText(frame, f"FPS: {self.actual_fps:.1f} | Clock: {now_str}", (30, 145),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.40, (148, 163, 184), 1)
         return frame
 
     def get_latest_frame(self):

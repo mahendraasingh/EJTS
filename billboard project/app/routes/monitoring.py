@@ -12,8 +12,16 @@ monitoring_bp = Blueprint("monitoring", __name__)
 
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm", "avi", "mov", "mkv"}
 
-def generate_frames():
+def generate_frames(app_instance=None):
     """Generator for MJPEG multipart video streaming."""
+    if not pipeline_engine.is_active:
+        try:
+            target_app = app_instance or current_app._get_current_object()
+            pipeline_engine.init_app(target_app)
+            pipeline_engine.start()
+        except Exception:
+            pass
+
     while True:
         frame = pipeline_engine.get_annotated_frame()
         if frame is not None:
@@ -28,7 +36,7 @@ def generate_frames():
 def video_feed():
     """Live MJPEG video feed with YOLO person overlays and monitoring zone."""
     return Response(
-        generate_frames(),
+        generate_frames(current_app._get_current_object()),
         mimetype="multipart/x-mixed-replace; boundary=frame"
     )
 

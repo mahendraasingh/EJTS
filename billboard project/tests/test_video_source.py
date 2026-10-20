@@ -71,3 +71,16 @@ def test_cached_video_file_serving_and_replay(client):
     res_replay = client.post("/api/monitoring/replay_video")
     # Will respond with 200 (if cap opened) or handle gracefully
     assert res_replay.status_code in [200, 400]
+
+def test_dual_monitoring_template_rendering(client):
+    """Verify dual studio monitoring interface renders with 1-time video player and live camera elements."""
+    res = client.get("/monitoring")
+    assert res.status_code == 200
+    html = res.data.decode("utf-8")
+    assert "uploadedVideoPlayer" in html
+    assert "videoFinishedOverlay" in html
+    assert "liveVideoFeed" in html
+    assert "globalRewatchBtn" in html
+    assert "hudZoneOcc" in html
+    assert "hudFovDet" in html
+    assert "Rewatch / Replay Video" in html

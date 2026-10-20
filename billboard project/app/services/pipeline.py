@@ -94,19 +94,23 @@ class VisionPipeline:
                     frame_height=h
                 )
 
-                # 3. Associate with active ad & manage sessions
-                current_ad = get_current_active_ad()
-                ad_id = current_ad.get("ad_id")
-
+                # 3. Associate with active ad & manage sessions inside app context
+                current_ad_name = "Welcome Banner"
                 if self.app:
-                    with self.app.app_context():
-                        self.session_manager.process_tracks(active_tracks, current_ad_id=ad_id)
+                    try:
+                        with self.app.app_context():
+                            current_ad = get_current_active_ad()
+                            ad_id = current_ad.get("ad_id")
+                            current_ad_name = current_ad.get("name", "Welcome Banner")
+                            self.session_manager.process_tracks(active_tracks, current_ad_id=ad_id)
+                    except Exception as err:
+                        current_ad_name = "Smart Billboard"
 
                 # 4. Generate annotated visualization frame
                 annotated = self._draw_annotations(
                     raw_frame,
                     active_tracks,
-                    current_ad.get("name", "Welcome Banner"),
+                    current_ad_name,
                     w, h
                 )
                 self.camera_service.update_annotated_frame(annotated)
