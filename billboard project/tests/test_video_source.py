@@ -84,3 +84,6 @@ def test_dual_monitoring_template_rendering(client):
     assert "hudZoneOcc" in html
     assert "hudFovDet" in html
     assert "Rewatch / Replay Video" in html
+    assert "livePersonCardsContainer" in html
+    assert "liveActivityLogFeed" in html
+    assert "kpiActivePersons" in html
