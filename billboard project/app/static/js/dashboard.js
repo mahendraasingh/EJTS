@@ -6,13 +6,32 @@ let currentPreset = "today";
 let activityChart = null;
 let shareChart = null;
 let pollTimer = null;
+let billboard3DInstance = null;
+let lastKnownAdName = "Smart Billboard AI";
 
 document.addEventListener("DOMContentLoaded", () => {
+    init3DExperience();
     initCharts();
     loadDashboardData();
     // Poll every 3 seconds for live telemetry & audience updates
     pollTimer = setInterval(loadDashboardData, 3000);
 });
+
+function init3DExperience() {
+    try {
+        if (typeof window.Billboard3D !== "undefined" && document.getElementById("billboard3DContainer")) {
+            billboard3DInstance = new window.Billboard3D("billboard3DContainer");
+        }
+    } catch (e) {
+        console.warn("3D Experience initialization skipped:", e);
+    }
+}
+
+function reset3DView() {
+    if (billboard3DInstance) {
+        billboard3DInstance.resetAngle();
+    }
+}
 
 function changePreset(preset) {
     currentPreset = preset;
@@ -48,8 +67,13 @@ async function fetchOverview() {
 
         // Update Live Telemetry
         const live = data.live_telemetry || {};
-        setText("metricLiveOccupancy", live.current_zone_occupancy || 0);
+        const occupancy = live.current_zone_occupancy || 0;
+        setText("metricLiveOccupancy", occupancy);
         setText("metricLiveDetected", live.current_detected_people || 0);
+
+        if (billboard3DInstance) {
+            billboard3DInstance.updateTelemetry(occupancy, lastKnownAdName);
+        }
 
         const hudCam = document.getElementById("hudCameraStatus");
         if (hudCam) {
@@ -68,6 +92,12 @@ async function fetchCurrentAd() {
         const hudAd = document.getElementById("hudCurrentAd");
         if (hudAd && data.name) {
             hudAd.textContent = data.name;
+        }
+        if (data.name) {
+            lastKnownAdName = data.name;
+            if (billboard3DInstance) {
+                billboard3DInstance.updateTelemetry(undefined, lastKnownAdName);
+            }
         }
     } catch (e) {
         console.error("Current ad fetch error:", e);
