@@ -2,17 +2,22 @@ import cv2
 import time
 import threading
 import numpy as np
+from pathlib import Path
 from datetime import datetime, timezone
-from app.models.utils import utc_now
 
 class CameraService:
-    """Manages OpenCV webcam video capture, frame buffering, and lifecycle."""
+    """Manages video acquisition from either hardware webcam or cached video file simulation."""
 
     def __init__(self, camera_index=0, width=640, height=480, target_fps=15):
         self.camera_index = camera_index
         self.width = width
         self.height = height
         self.target_fps = target_fps
+
+        # Source mode: 'webcam' or 'video_file'
+        self.source_mode = "webcam"
+        self.video_path = None
+        self.video_filename = None
 
         self.cap = None
         self.is_running = False
@@ -24,9 +29,31 @@ class CameraService:
         self.last_frame_time = 0
         self.actual_fps = 0.0
         self.error_message = None
+        self._need_reconnect = False
+
+    def set_source(self, mode, video_path=None, filename=None):
+        """Switch video input between physical webcam and a cached video file."""
+        with self.frame_lock:
+            self.source_mode = mode
+            if mode == "video_file" and video_path:
+                self.video_path = str(video_path)
+                self.video_filename = filename or Path(video_path).name
+            elif mode == "webcam":
+                self.video_path = None
+                self.video_filename = None
+            self._need_reconnect = True
+
+    def get_source_info(self):
+        """Return active video feed configuration."""
+        return {
+            "source_mode": self.source_mode,
+            "video_path": self.video_path,
+            "video_filename": self.video_filename,
+            "camera_index": self.camera_index
+        }
 
     def start(self):
-        """Start background camera acquisition thread."""
+        """Start background video acquisition thread."""
         if self.is_running:
             return True
 
@@ -37,30 +64,41 @@ class CameraService:
         return True
 
     def stop(self):
-        """Stop camera acquisition and release device resources."""
+        """Stop video acquisition and release device resources."""
         self.is_running = False
         if self.capture_thread and self.capture_thread.is_alive():
             self.capture_thread.join(timeout=2.0)
         self._release_camera()
 
     def _init_camera(self):
-        """Attempt to open hardware camera with OpenCV."""
+        """Attempt to open hardware camera or cached video file."""
+        self._release_camera()
         try:
-            # On Windows, cv2.CAP_DSHOW can provide faster startup, but default index works broadly
-            self.cap = cv2.VideoCapture(self.camera_index)
-            if self.cap and self.cap.isOpened():
-                self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
-                self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
-                self.is_camera_available = True
-                self.error_message = None
-                return True
+            if self.source_mode == "video_file" and self.video_path and Path(self.video_path).exists():
+                self.cap = cv2.VideoCapture(self.video_path)
+                if self.cap and self.cap.isOpened():
+                    self.is_camera_available = True
+                    self.error_message = None
+                    return True
+                else:
+                    self.is_camera_available = False
+                    self.error_message = f"Unable to open cached video file: {self.video_filename}"
+                    return False
             else:
-                self.is_camera_available = False
-                self.error_message = f"Camera device at index {self.camera_index} could not be opened."
-                return False
+                self.cap = cv2.VideoCapture(self.camera_index)
+                if self.cap and self.cap.isOpened():
+                    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+                    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+                    self.is_camera_available = True
+                    self.error_message = None
+                    return True
+                else:
+                    self.is_camera_available = False
+                    self.error_message = f"Camera device at index {self.camera_index} could not be opened."
+                    return False
         except Exception as e:
             self.is_camera_available = False
-            self.error_message = f"Camera initialization exception: {str(e)}"
+            self.error_message = f"Video capture initialization error: {str(e)}"
             return False
 
     def _release_camera(self):
@@ -74,7 +112,7 @@ class CameraService:
         self.is_camera_available = False
 
     def _capture_loop(self):
-        """Continuous frame acquisition thread."""
+        """Continuous frame acquisition thread with auto-looping for cached video."""
         self._init_camera()
         frame_interval = 1.0 / max(1, self.target_fps)
         fps_counter = 0
@@ -83,21 +121,37 @@ class CameraService:
         while self.is_running:
             start_time = time.time()
 
+            # Handle dynamic source change requests
+            if self._need_reconnect:
+                self._need_reconnect = False
+                self._init_camera()
+
             if self.is_camera_available and self.cap and self.cap.isOpened():
                 ret, frame = self.cap.read()
+
+                # If reading a video file and reaching the end, rewind to frame 0 for seamless infinite loop
+                if (not ret or frame is None) and self.source_mode == "video_file":
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ret, frame = self.cap.read()
+
                 if ret and frame is not None:
+                    # Resize if frame does not match target resolution
+                    if frame.shape[1] != self.width or frame.shape[0] != self.height:
+                        frame = cv2.resize(frame, (self.width, self.height))
+
                     with self.frame_lock:
                         self.current_frame = frame
                         self.last_frame_time = time.time()
                 else:
-                    # Device read failed or disconnected
-                    self.is_camera_available = False
-                    self.error_message = "Camera read failed. Attempting reconnect in 3s..."
-                    self._release_camera()
-                    time.sleep(3.0)
-                    self._init_camera()
+                    # In webcam mode, handle disconnect
+                    if self.source_mode == "webcam":
+                        self.is_camera_available = False
+                        self.error_message = "Webcam disconnect detected. Reconnecting in 3s..."
+                        self._release_camera()
+                        time.sleep(3.0)
+                        self._init_camera()
             else:
-                # Fallback standby frame with timestamp when camera hardware is absent
+                # Standby test frame
                 standby_frame = self._create_standby_frame()
                 with self.frame_lock:
                     self.current_frame = standby_frame
@@ -120,40 +174,36 @@ class CameraService:
     def _create_standby_frame(self):
         """Generate an informative standby test frame when webcam hardware is unavailable."""
         frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
-        # Gradient background
         frame[:] = (20, 25, 35)
 
-        # Draw tech border
         cv2.rectangle(frame, (20, 20), (self.width - 20, self.height - 20), (99, 102, 241), 2)
         
-        # Draw status text
         now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        cv2.putText(frame, "SMART BILLBOARD - CAMERA STANDBY", (40, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
+        mode_str = "WEB-CAMERA" if self.source_mode == "webcam" else f"CACHED-VIDEO ({self.video_filename})"
+        cv2.putText(frame, "SMART BILLBOARD - VISION FEED STANDBY", (30, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255, 255, 255), 2)
         
-        status_msg = self.error_message or "Webcam searching / Standby mode"
-        cv2.putText(frame, f"Status: {status_msg}", (40, 110),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (148, 163, 184), 1)
-        cv2.putText(frame, f"Device Index: {self.camera_index} | Res: {self.width}x{self.height}", (40, 140),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (148, 163, 184), 1)
-        cv2.putText(frame, f"System Clock: {now_str}", (40, 170),
+        cv2.putText(frame, f"Source Mode: {mode_str}", (30, 95),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (56, 189, 248), 1)
+        
+        status_msg = self.error_message or "Awaiting video input or webcam connection..."
+        cv2.putText(frame, f"Status: {status_msg}", (30, 125),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (148, 163, 184), 1)
+        cv2.putText(frame, f"Target Res: {self.width}x{self.height} | Clock: {now_str}", (30, 155),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.42, (148, 163, 184), 1)
         return frame
 
     def get_latest_frame(self):
-        """Thread-safe retrieval of the latest captured frame."""
         with self.frame_lock:
             if self.current_frame is not None:
                 return self.current_frame.copy()
             return None
 
     def update_annotated_frame(self, frame):
-        """Thread-safe update of the latest frame containing AI bounding boxes and overlays."""
         with self.frame_lock:
             self.annotated_frame = frame
 
     def get_annotated_frame(self):
-        """Retrieve latest annotated frame or raw frame."""
         with self.frame_lock:
             if self.annotated_frame is not None:
                 return self.annotated_frame.copy()
@@ -162,10 +212,11 @@ class CameraService:
             return self._create_standby_frame()
 
     def get_status(self):
-        """Return diagnostic status of camera subsystem."""
         return {
             "is_running": self.is_running,
             "camera_available": self.is_camera_available,
+            "source_mode": self.source_mode,
+            "video_filename": self.video_filename,
             "camera_index": self.camera_index,
             "width": self.width,
             "height": self.height,

@@ -18,6 +18,8 @@ env/
 # Databases and runtime data
 instance/*.sqlite
 instance/*.db
+instance/video_cache/*
+!instance/video_cache/.gitkeep
 *.sqlite3
 *.db
 

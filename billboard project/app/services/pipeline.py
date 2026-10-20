@@ -40,7 +40,9 @@ class VisionPipeline:
             fps = Setting.get_val("inference_fps", app.config.get("INFERENCE_FPS", 10))
             zone = Setting.get_val("monitoring_zone", app.config.get("DEFAULT_MONITORING_ZONE"))
 
-            self.camera_service = CameraService(camera_index=int(cam_idx), width=int(w), height=int(h))
+            self.camera_service.camera_index = int(cam_idx)
+            self.camera_service.width = int(w)
+            self.camera_service.height = int(h)
             self.detector = YoloDetector(confidence_threshold=float(conf))
             self.inference_fps = int(fps)
             if zone:
