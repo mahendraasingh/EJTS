@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}About & Architecture - Smart Billboard AI{% endblock %}
+{% block page_title %}About & Architecture{% endblock %}
+{% block page_subtitle %}System pipeline, metric definitions, and privacy disclosures{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <div class="card">
+        <h3><i class="fa-solid fa-microchip"></i> System Architecture</h3>
+        <p>This project implements an end-to-end edge analytics pipeline on a standard Windows laptop:</p>
+        <ol style="margin-top: 10px; padding-left: 20px; line-height: 1.8;">
+            <li><strong>Video Capture:</strong> Continuous webcam frame acquisition via OpenCV.</li>
+            <li><strong>Object Detection:</strong> Ultralytics YOLOv8 inference targeting the person class.</li>
+            <li><strong>Centroid / IoU Tracking:</strong> Temporary tracking IDs to prevent duplicate counts across continuous frames.</li>
+            <li><strong>Monitoring Zone (ROI):</strong> Region-of-interest evaluation to distinguish casual passersby from engaged presence.</li>
+            <li><strong>Session Lifecycle:</strong> Session initialization on entry, grace period timeout on departure, and duration calculation.</li>
+            <li><strong>Advertisement Attribution:</strong> Dynamic association with the currently playing billboard advertisement.</li>
+            <li><strong>Data Persistence:</strong> Storage in local SQLite database via SQLAlchemy.</li>
+            <li><strong>Live Dashboard:</strong> Periodic polling and Chart.js visualizations.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

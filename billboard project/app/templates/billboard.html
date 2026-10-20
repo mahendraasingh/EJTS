@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Billboard - Live Display</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        .billboard-kiosk {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        .ad-media-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ad-media-container img, .ad-media-container video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .kiosk-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #f8fafc;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .kiosk-exit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.7);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+        .kiosk-exit-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="billboard-kiosk" id="billboardKiosk">
+        <button class="kiosk-exit-btn" onclick="window.close()" title="Exit Kiosk Mode">
+            <i class="fa-solid fa-xmark"></i> Exit
+        </button>
+
+        <div class="ad-media-container" id="adMediaContainer">
+            <div class="default-billboard-screen" style="color: #64748b; text-align: center;">
+                <i class="fa-solid fa-tower-broadcast" style="font-size: 48px; margin-bottom: 12px;"></i>
+                <h2>Smart Billboard AI Display</h2>
+                <p>Waiting for active advertisement playlist...</p>
+            </div>
+        </div>
+
+        <div class="kiosk-overlay" id="kioskOverlay">
+            <span class="live-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+            <span id="currentAdTitle">Loading playlist...</span>
+            <span id="adDurationCountdown" style="color:#94a3b8;">--s</span>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/billboard.js') }}"></script>
+</body>
+</html>

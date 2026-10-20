@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Billboard AI Analytics{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+                <div class="logo-text">
+                    <h2>SmartBillboard</h2>
+                    <span>AI Analytics Hub</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('main.dashboard_view') }}" class="nav-item {% if request.endpoint == 'main.dashboard_view' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Overview Dashboard</span>
+                </a>
+                <a href="{{ url_for('main.monitoring_view') }}" class="nav-item {% if request.endpoint == 'main.monitoring_view' %}active{% endif %}">
+                    <i class="fa-solid fa-video"></i>
+                    <span>Live AI Monitor</span>
+                </a>
+                <a href="{{ url_for('main.billboard_view') }}" class="nav-item {% if request.endpoint == 'main.billboard_view' %}active{% endif %}" target="_blank">
+                    <i class="fa-solid fa-tv"></i>
+                    <span>Billboard Display <i class="fa-solid fa-arrow-up-right-from-square external-badge"></i></span>
+                </a>
+                <a href="{{ url_for('main.advertisements_view') }}" class="nav-item {% if request.endpoint == 'main.advertisements_view' %}active{% endif %}">
+                    <i class="fa-solid fa-rectangle-ad"></i>
+                    <span>Ads Manager</span>
+                </a>
+                <a href="{{ url_for('main.analytics_view') }}" class="nav-item {% if request.endpoint == 'main.analytics_view' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Deep Analytics</span>
+                </a>
+                <a href="{{ url_for('main.settings_view') }}" class="nav-item {% if request.endpoint == 'main.settings_view' %}active{% endif %}">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>System Settings</span>
+                </a>
+                <a href="{{ url_for('main.about_view') }}" class="nav-item {% if request.endpoint == 'main.about_view' %}active{% endif %}">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About & Arch</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status-pill" id="globalStatusPill">
+                    <span class="status-dot pulsing"></span>
+                    <span class="status-label">System Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                    <p class="subtitle">{% block page_subtitle %}Real-time audience metrics & ad performance{% endblock %}</p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="live-clock" id="liveClock">--:--:-- UTC</div>
+                    <a href="{{ url_for('main.billboard_view') }}" class="btn btn-primary" target="_blank">
+                        <i class="fa-solid fa-play"></i> Launch Billboard
+                    </a>
+                </div>
+            </header>
+
+            <div class="page-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
