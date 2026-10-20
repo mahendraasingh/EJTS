@@ -153,17 +153,29 @@ class VisionPipeline:
             in_zone = track.get("in_zone", False)
 
             color = (16, 185, 129) if in_zone else (245, 158, 11)  # Emerald in zone, Amber outside
-            label = f"Viewer #{tid}" if in_zone else f"Person #{tid}"
+            act = track.get("action", "Person")
+            dwell_s = track.get("dwell_seconds", 0.0)
+            eng = track.get("engagement_score", 30)
+            prox = track.get("proximity", "Mid")
+
+            label = f"#{tid} {act} ({dwell_s}s)" if in_zone else f"#{tid} {act}"
+            sub_label = f"Score: {eng}% | {prox}"
 
             # Box & Centroid Crosshair
             cv2.rectangle(vis, (x1, y1), (x2, y2), color, 2)
             cv2.circle(vis, (cx, cy), 4, color, -1)
 
             # Label banner
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-            cv2.rectangle(vis, (x1, max(0, y1 - 20)), (x1 + tw + 10, y1), color, -1)
-            cv2.putText(vis, label, (x1 + 5, max(12, y1 - 5)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.42, 1)
+            cv2.rectangle(vis, (x1, max(0, y1 - 22)), (x1 + tw + 10, y1), color, -1)
+            cv2.putText(vis, label, (x1 + 5, max(12, y1 - 6)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 0, 0), 1, cv2.LINE_AA)
+
+            # Sub-label for engagement & proximity below box
+            (stw, sth), _ = cv2.getTextSize(sub_label, cv2.FONT_HERSHEY_SIMPLEX, 0.38, 1)
+            cv2.rectangle(vis, (x1, min(height, y2)), (x1 + stw + 8, min(height, y2 + 18)), (15, 23, 42), -1)
+            cv2.putText(vis, sub_label, (x1 + 4, min(height - 4, y2 + 14)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.38, (56, 189, 248), 1, cv2.LINE_AA)
 
         # 3. Top HUD Banner - Pure Dark Obsidian
         hud_bg = vis.copy()
@@ -182,6 +194,14 @@ class VisionPipeline:
     def get_annotated_frame(self):
         """Retrieve latest processed frame for streaming."""
         return self.camera_service.get_annotated_frame()
+
+    def get_person_telemetry(self):
+        """Retrieve structured real-time readings and activity logs of persons in camera view."""
+        telemetry = self.tracker.get_live_telemetry()
+        telemetry["metrics"]["camera_fps"] = self.camera_service.actual_fps
+        telemetry["metrics"]["pipeline_active"] = self.is_active
+        telemetry["metrics"]["source_mode"] = self.camera_service.source_mode
+        return telemetry
 
     def get_status(self):
         """Retrieve real-time telemetry from all vision subsystems."""

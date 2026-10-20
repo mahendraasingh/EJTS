@@ -80,3 +80,33 @@ def test_session_manager_attribution_and_duration(app_ctx):
     assert session.advertisement_id == ad.id
     assert session.status == "completed"
     assert session.estimated_duration >= 0.5
+
+def test_live_person_telemetry_and_behavior(app_ctx):
+    """Verify live person behavioral telemetry, dwell calculation, and endpoint response."""
+    tracker = CentroidTracker(lost_track_timeout=1.0, max_distance=100)
+    zone = {"x1": 0.2, "y1": 0.2, "x2": 0.8, "y2": 0.8}
+
+    dets = [{"box": [280, 100, 360, 380], "centroid": (320, 240), "confidence": 0.94}]
+    tracker.update(dets, monitoring_zone=zone, frame_width=640, frame_height=480)
+
+    telemetry = tracker.get_live_telemetry()
+    assert "active_persons" in telemetry
+    assert "activity_log" in telemetry
+    assert "metrics" in telemetry
+    assert len(telemetry["active_persons"]) == 1
+
+    person = telemetry["active_persons"][0]
+    assert person["tracking_id"] == 1
+    assert person["in_zone"] is True
+    assert "action" in person
+    assert "engagement_score" in person
+    assert "proximity" in person
+    assert len(telemetry["activity_log"]) >= 1
+
+    # Test API endpoint
+    client = app_ctx.test_client()
+    res = client.get("/api/monitoring/live_person_telemetry")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert "active_persons" in data
+    assert "metrics" in data

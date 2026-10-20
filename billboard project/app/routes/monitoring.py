@@ -46,6 +46,12 @@ def monitoring_status():
     status = pipeline_engine.get_status()
     return jsonify(status), 200
 
+@monitoring_bp.route("/api/monitoring/live_person_telemetry", methods=["GET"])
+def live_person_telemetry():
+    """Return live readings of all people in camera view including dwell, behavior actions, and event log."""
+    telemetry = pipeline_engine.get_person_telemetry()
+    return jsonify(telemetry), 200
+
 @monitoring_bp.route("/api/monitoring/source", methods=["GET"])
 def get_source():
     """Return current video feed source info."""
