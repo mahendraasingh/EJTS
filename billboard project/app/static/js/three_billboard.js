@@ -108,15 +108,15 @@ class Billboard3DExperience {
         const ctx = this.dynCtx;
         if (!ctx) return;
 
-        // Dark gradient background
+        // Pure jet black gradient background
         const grad = ctx.createLinearGradient(0, 0, 512, 320);
-        grad.addColorStop(0, "#090d16");
-        grad.addColorStop(1, "#1e1b4b");
+        grad.addColorStop(0, "#040404");
+        grad.addColorStop(1, "#111111");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 512, 320);
 
         // Cyber grid lines
-        ctx.strokeStyle = "rgba(99, 102, 241, 0.25)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
         ctx.lineWidth = 1;
         for (let x = 0; x < 512; x += 32) {
             ctx.beginPath();
@@ -168,11 +168,11 @@ class Billboard3DExperience {
     buildBillboardModel() {
         this.billboardGroup = new THREE.Group();
 
-        // Frame / Enclosure
+        // Frame / Enclosure - Jet Black Anodized Aluminum
         const frameGeo = new THREE.BoxGeometry(4.2, 2.6, 0.25);
         const frameMat = new THREE.MeshStandardMaterial({
-            color: 0x1e293b,
-            metalness: 0.8,
+            color: 0x141414,
+            metalness: 0.9,
             roughness: 0.2
         });
         const frameMesh = new THREE.Mesh(frameGeo, frameMat);
@@ -193,9 +193,9 @@ class Billboard3DExperience {
         this.screenMesh.position.z = 0.13;
         this.billboardGroup.add(this.screenMesh);
 
-        // Stand / Pole
+        // Stand / Pole - Pure Matte Black
         const poleGeo = new THREE.CylinderGeometry(0.12, 0.12, 2.0, 16);
-        const poleMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.1 });
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x080808, metalness: 0.95, roughness: 0.15 });
         const poleMesh = new THREE.Mesh(poleGeo, poleMat);
         poleMesh.position.y = -2.1;
         this.billboardGroup.add(poleMesh);

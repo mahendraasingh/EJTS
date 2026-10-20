@@ -105,7 +105,7 @@ function renderAdsTable(ads) {
         const mediaUrl = `/media/advertisements/${ad.media_filename}`;
         const isVideo = ad.media_type === "video";
         const thumbHtml = isVideo
-            ? `<div style="width:64px; height:42px; background:#1e293b; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="openPreview('${escapeHtml(ad.name)}', '${ad.media_filename}', 'video')"><i class="fa-solid fa-play" style="color:var(--info);"></i></div>`
+            ? `<div style="width:64px; height:42px; background:#181818; border:1px solid rgba(255,255,255,0.08); border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="openPreview('${escapeHtml(ad.name)}', '${ad.media_filename}', 'video')"><i class="fa-solid fa-play" style="color:var(--info);"></i></div>`
             : `<img src="${mediaUrl}" style="width:64px; height:42px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="openPreview('${escapeHtml(ad.name)}', '${ad.media_filename}', 'image')">`;
 
         const statusBadge = ad.is_active

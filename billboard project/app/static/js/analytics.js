@@ -64,7 +64,7 @@ async function fetchCampaignPerformance() {
                     <td>${c.max_duration.toFixed(1)}s</td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="flex-grow: 1; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; width: 60px;">
+                            <div style="flex-grow: 1; height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; width: 60px;">
                                 <div style="height: 100%; width: ${c.session_share_percent}%; background: #10b981;"></div>
                             </div>
                             <span style="font-size: 11px; font-weight: 600;">${c.session_share_percent}%</span>
@@ -101,7 +101,7 @@ async function fetchAnalyticsCharts() {
             if (active.length === 0) {
                 deepShareChart.data.labels = ["No Data in Window"];
                 deepShareChart.data.datasets[0].data = [1];
-                deepShareChart.data.datasets[0].backgroundColor = ["#1e293b"];
+                deepShareChart.data.datasets[0].backgroundColor = ["#161616"];
             } else {
                 const palette = ["#6366f1", "#10b981", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6"];
                 deepShareChart.data.labels = active.map(c => c.name);
@@ -236,8 +236,8 @@ function initAnalyticsCharts() {
                 labels: [],
                 datasets: [{
                     data: [1],
-                    backgroundColor: ["#1e293b"],
-                    borderColor: "#0f172a",
+                    backgroundColor: ["#161616"],
+                    borderColor: "#0a0a0a",
                     borderWidth: 2
                 }]
             },

@@ -161,9 +161,9 @@ class VisionPipeline:
             cv2.putText(vis, label, (x1 + 5, max(12, y1 - 5)),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
 
-        # 3. Top HUD Banner
+        # 3. Top HUD Banner - Pure Dark Obsidian
         hud_bg = vis.copy()
-        cv2.rectangle(hud_bg, (10, 10), (width - 10, 60), (15, 23, 42), -1)
+        cv2.rectangle(hud_bg, (10, 10), (width - 10, 60), (10, 10, 10), -1)
         cv2.addWeighted(hud_bg, 0.75, vis, 0.25, 0, vis)
         cv2.rectangle(vis, (10, 10), (width - 10, 60), (255, 255, 255), 1)
 

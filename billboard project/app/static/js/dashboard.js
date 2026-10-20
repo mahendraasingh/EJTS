@@ -187,8 +187,8 @@ function initCharts() {
                 labels: ["No Campaigns Recorded"],
                 datasets: [{
                     data: [1],
-                    backgroundColor: ["#1e293b"],
-                    borderColor: "#0f172a",
+                    backgroundColor: ["#161616"],
+                    borderColor: "#0a0a0a",
                     borderWidth: 2
                 }]
             },
@@ -222,7 +222,7 @@ function updateShareChart(campaigns) {
     if (activeWithSessions.length === 0) {
         shareChart.data.labels = ["No Sessions Yet"];
         shareChart.data.datasets[0].data = [1];
-        shareChart.data.datasets[0].backgroundColor = ["#1e293b"];
+        shareChart.data.datasets[0].backgroundColor = ["#161616"];
     } else {
         const palette = ["#6366f1", "#10b981", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6"];
         shareChart.data.labels = activeWithSessions.map(c => c.name);
