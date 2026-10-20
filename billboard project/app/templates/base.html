@@ -6,6 +6,7 @@
     <title>{% block title %}Smart Billboard AI Analytics{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/opening_scene.css') }}">
     <script>
         (function() {
             const savedTheme = localStorage.getItem("billboard-theme") || "dark";
@@ -73,6 +74,10 @@
                     <p class="subtitle">{% block page_subtitle %}Real-time audience metrics & ad performance{% endblock %}</p>
                 </div>
                 <div class="topbar-actions">
+                    <button id="replayIntroBtn" class="btn btn-secondary" onclick="replayOpeningScene()" title="Replay Cinematic Startup Scene" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-play" style="color: #38bdf8; font-size: 10px;"></i>
+                        <span>Intro Scene</span>
+                    </button>
                     <button id="themeToggleBtn" class="btn btn-secondary theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
                         <i class="fa-solid fa-sun" id="themeIcon"></i>
                     </button>
@@ -89,9 +94,89 @@
         </main>
     </div>
 
+    <!-- Cinematic Opening Scene Overlay -->
+    <div id="openingSceneOverlay" class="scene-hidden">
+        <div class="scene-bg-grid"></div>
+        <div class="scene-ambient-glow"></div>
+        <div class="scene-scanline"></div>
+
+        <button class="scene-audio-btn" id="introAudioToggle" onclick="toggleIntroAudio()" title="Toggle Cinematic Audio FX">
+            <i class="fa-solid fa-volume-high"></i> Audio: FX Active
+        </button>
+
+        <div class="scene-hud-container">
+            <div class="scene-orb-wrapper">
+                <div class="scene-ring-outer"></div>
+                <div class="scene-ring-inner"></div>
+                <div class="scene-orb-icon">
+                    <i class="fa-solid fa-tower-broadcast"></i>
+                </div>
+            </div>
+
+            <span class="scene-tag">Smart Edge DOOH Core</span>
+            <h1 class="scene-title">SMART BILLBOARD AI</h1>
+            <p class="scene-subtitle">
+                Autonomous Computer Vision, 3D Spatial Intelligence & Real-Time Audience Analytics
+            </p>
+
+            <div class="scene-diagnostics">
+                <div class="diag-header">
+                    <span>Subsystem Architecture Matrix</span>
+                    <span id="sceneStatusLabel">INITIALIZING CORE SUBSYSTEMS...</span>
+                </div>
+                <ul class="diag-list">
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Ultralytics YOLOv8 Edge Vision Core</span>
+                        <span class="diag-status">ONLINE</span>
+                    </li>
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Centroid Kinematic Tracker & Filter</span>
+                        <span class="diag-status">CALIBRATED</span>
+                    </li>
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Spatial ROI Monitoring Matrix (50% FOV)</span>
+                        <span class="diag-status">ARMED</span>
+                    </li>
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Three.js 3D WebGL Digital Twin Engine</span>
+                        <span class="diag-status">SYNCHRONIZED</span>
+                    </li>
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Cached Video File Simulation Engine</span>
+                        <span class="diag-status">ACTIVE</span>
+                    </li>
+                    <li class="diag-item">
+                        <span class="diag-label"><span class="diag-dot"></span> Real-Time Campaign Attribution Pipeline</span>
+                        <span class="diag-status">ENGAGED</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="scene-progress-wrapper">
+                <div class="scene-progress-header">
+                    <span>System Diagnostics Progress</span>
+                    <span id="sceneProgressPct">0%</span>
+                </div>
+                <div class="scene-progress-bar">
+                    <div class="scene-progress-fill" id="sceneProgressFill"></div>
+                </div>
+            </div>
+
+            <div class="scene-actions">
+                <button class="scene-btn-enter" id="sceneEnterBtn" onclick="dismissOpeningScene()">
+                    <i class="fa-solid fa-bolt"></i> Enter Command Center
+                </button>
+                <button class="scene-btn-skip" onclick="dismissOpeningScene()">
+                    Skip Intro <i class="fa-solid fa-forward-step" style="margin-left: 4px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Core Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/opening_scene.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

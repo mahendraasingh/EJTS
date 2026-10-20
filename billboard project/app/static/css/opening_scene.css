@@ -1,0 +1,402 @@
+/* ==========================================================================
+   SMART BILLBOARD AI ANALYTICS - CINEMATIC OPENING SCENE STYLES
+   ========================================================================== */
+
+#openingSceneOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #060911;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+    color: #f8fafc;
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s ease;
+}
+
+#openingSceneOverlay.scene-hidden {
+    display: none !important;
+}
+
+#openingSceneOverlay.scene-dismissing {
+    opacity: 0;
+    transform: scale(1.05);
+    filter: blur(10px);
+    pointer-events: none;
+}
+
+/* Cyber Grid & Ambient Background FX */
+.scene-bg-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridFloat 30s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes gridFloat {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-48px, -48px); }
+}
+
+.scene-ambient-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(6, 182, 212, 0.1) 40%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: glowPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+/* Scanline Sweeper */
+.scene-scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.7), transparent);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+    pointer-events: none;
+    animation: scanSweep 3.5s linear infinite;
+}
+
+@keyframes scanSweep {
+    0% { top: -5%; }
+    100% { top: 105%; }
+}
+
+/* Central HUD Card */
+.scene-hud-container {
+    position: relative;
+    width: 90%;
+    max-width: 680px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.2);
+    backdrop-filter: blur(20px);
+    padding: 36px 40px;
+    text-align: center;
+    z-index: 10;
+}
+
+/* Cyber Corner Accents */
+.scene-hud-container::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 28px;
+    height: 28px;
+    border-top: 3px solid #38bdf8;
+    border-left: 3px solid #38bdf8;
+    border-top-left-radius: 12px;
+}
+
+.scene-hud-container::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    border-bottom: 3px solid #10b981;
+    border-right: 3px solid #10b981;
+    border-bottom-right-radius: 12px;
+}
+
+/* Hologram Orb & Orbital Rings */
+.scene-orb-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scene-ring-outer {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px dashed rgba(99, 102, 241, 0.6);
+    border-radius: 50%;
+    animation: rotateClockwise 8s linear infinite;
+}
+
+.scene-ring-inner {
+    position: absolute;
+    width: 74px;
+    height: 74px;
+    border: 2px dotted rgba(56, 189, 248, 0.7);
+    border-radius: 50%;
+    animation: rotateCounterClockwise 5s linear infinite;
+}
+
+@keyframes rotateClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rotateCounterClockwise {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.scene-orb-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #6366f1, #38bdf8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.8);
+    animation: orbPulse 2s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); }
+    50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(56, 189, 248, 0.9); }
+}
+
+/* Typography */
+.scene-tag {
+    display: inline-block;
+    padding: 3px 12px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.scene-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, #ffffff 30%, #38bdf8 70%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+}
+
+.scene-subtitle {
+    font-size: 13px;
+    color: #94a3b8;
+    max-width: 520px;
+    margin: 0 auto 24px;
+    line-height: 1.5;
+}
+
+/* Subsystem Diagnostics Terminal */
+.scene-diagnostics {
+    background: rgba(10, 15, 29, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: left;
+    margin-bottom: 24px;
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    font-size: 11.5px;
+}
+
+.diag-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.diag-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.diag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0.25;
+    transform: translateY(4px);
+    transition: all 0.3s ease;
+    color: #cbd5e1;
+}
+
+.diag-item.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.diag-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.diag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #64748b;
+    transition: background 0.25s ease;
+}
+
+.diag-item.active .diag-dot {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.diag-status {
+    font-weight: 700;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #64748b;
+}
+
+.diag-item.active .diag-status {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+/* Progress Bar */
+.scene-progress-wrapper {
+    margin-bottom: 24px;
+}
+
+.scene-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.scene-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.scene-progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #38bdf8, #10b981);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+    transition: width 0.15s ease-out;
+}
+
+/* Action Controls */
+.scene-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.scene-btn-enter {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.scene-btn-enter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.6);
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+}
+
+.scene-btn-skip {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-btn-skip:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.scene-audio-btn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.scene-audio-btn:hover {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.4);
+}
