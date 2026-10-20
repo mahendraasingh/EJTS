@@ -1,11 +1,225 @@
 {% extends "base.html" %}
 
-{% block title %}Advertisements Management - Smart Billboard AI{% endblock %}
+{% block title %}Advertisement Campaigns - Smart Billboard AI{% endblock %}
 {% block page_title %}Advertisement Campaigns{% endblock %}
-{% block page_subtitle %}Upload, schedule, configure, and curate digital billboard advertisements{% endblock %}
+{% block page_subtitle %}Upload, schedule, curate, and monitor digital billboard campaigns{% endblock %}
 
 {% block content %}
-<div class="ads-management-container">
-    <div class="loading-state">Loading advertisements...</div>
+<div class="ads-page-container">
+    <!-- Top KPI Cards -->
+    <div class="grid-cards">
+        <div class="card metric-card">
+            <div class="metric-header">
+                <span>Active Campaigns</span>
+                <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                    <i class="fa-solid fa-rectangle-ad"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricActiveAds">0</div>
+            <div class="metric-footer">Currently in playback rotation</div>
+        </div>
+
+        <div class="card metric-card">
+            <div class="metric-header">
+                <span>Total Campaigns</span>
+                <div class="metric-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricTotalAds">0</div>
+            <div class="metric-footer">Registered in repository</div>
+        </div>
+
+        <div class="card metric-card">
+            <div class="metric-header">
+                <span>Total Playlist Time</span>
+                <div class="metric-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricCycleDuration">0s</div>
+            <div class="metric-footer">Full playlist loop duration</div>
+        </div>
+
+        <div class="card metric-card">
+            <div class="metric-header">
+                <span>Categories</span>
+                <div class="metric-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                    <i class="fa-solid fa-tags"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricCategoryCount">0</div>
+            <div class="metric-footer">Distinct ad segments</div>
+        </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="card" style="margin-bottom: 24px; padding: 16px 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; max-width: 500px;">
+                <input type="text" id="adSearchInput" class="form-control" placeholder="Search campaigns by name or category...">
+                <select id="adCategoryFilter" class="form-control" style="max-width: 160px;">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-secondary" onclick="loadAdvertisements()">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
+                <button class="btn btn-primary" onclick="openNewAdModal()">
+                    <i class="fa-solid fa-plus"></i> New Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advertisements Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Order</th>
+                        <th style="width: 80px;">Preview</th>
+                        <th>Campaign Name</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Duration</th>
+                        <th>Campaign Dates</th>
+                        <th>Status</th>
+                        <th style="text-align: right; width: 160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adsTableBody">
+                    <tr>
+                        <td colspan="9" class="loading-state">Loading campaigns...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Modal: New Advertisement -->
+<div class="modal" id="newAdModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-cloud-arrow-up"></i> New Advertisement Campaign</h3>
+            <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="closeModal('newAdModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="newAdForm" onsubmit="handleCreateAd(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Campaign Name *</label>
+                    <input type="text" name="name" class="form-control" required placeholder="e.g. Summer Sports Sale">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" name="category" class="form-control" placeholder="e.g. Retail, Tech, Food" value="General">
+                    </div>
+                    <div class="form-group">
+                        <label>Display Duration (Seconds) *</label>
+                        <input type="number" name="duration" class="form-control" min="2" max="300" value="10" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <textarea name="description" class="form-control" rows="2" placeholder="Brief campaign details..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Start Date (Optional)</label>
+                        <input type="datetime-local" name="campaign_start" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date (Optional)</label>
+                        <input type="datetime-local" name="campaign_end" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Upload Media File (Image: jpg, png, webp | Video: mp4, webm) *</label>
+                    <input type="file" name="file" id="newAdFileInput" class="form-control" accept="image/*,video/*" required onchange="previewUploadFile(event)">
+                    <div id="uploadPreviewBox" style="margin-top: 10px; max-height: 150px; display: none; text-align: center; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 8px;">
+                    </div>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="is_active" id="newAdIsActive" checked style="width: 16px; height: 16px;">
+                    <label for="newAdIsActive" style="margin: 0; cursor: pointer;">Activate immediately for billboard rotation</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('newAdModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="saveAdBtn">
+                    <i class="fa-solid fa-check"></i> Upload & Create
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Edit Advertisement -->
+<div class="modal" id="editAdModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-pen-to-square"></i> Edit Advertisement Campaign</h3>
+            <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="closeModal('editAdModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="editAdForm" onsubmit="handleUpdateAd(event)">
+            <input type="hidden" name="ad_id" id="editAdId">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Campaign Name *</label>
+                    <input type="text" name="name" id="editAdName" class="form-control" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" name="category" id="editAdCategory" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Display Duration (Seconds) *</label>
+                        <input type="number" name="duration" id="editAdDuration" class="form-control" min="2" max="300" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" id="editAdDescription" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="is_active" id="editAdIsActive" style="width: 16px; height: 16px;">
+                    <label for="editAdIsActive" style="margin: 0; cursor: pointer;">Active in playlist</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editAdModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Media Preview -->
+<div class="modal" id="mediaPreviewModal">
+    <div class="modal-content" style="max-width: 720px; background: #000;">
+        <div class="modal-header" style="background: var(--bg-surface);">
+            <h3 id="previewModalTitle">Media Preview</h3>
+            <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="closeModal('mediaPreviewModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="mediaPreviewContainer" style="display: flex; align-items: center; justify-content: center; min-height: 380px; padding: 20px;">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/advertisements.js') }}"></script>
 {% endblock %}
