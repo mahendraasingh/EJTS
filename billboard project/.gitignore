@@ -1,0 +1,49 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment and secrets
+.env
+*.env.local
+
+# Databases and runtime data
+instance/*.sqlite
+instance/*.db
+*.sqlite3
+*.db
+
+# Logs
+*.log
+logs/
+
+# Uploaded media (keep default/sample placeholders if needed)
+media/advertisements/*
+!media/advertisements/.gitkeep
+!media/advertisements/default_ad.jpg
+!media/advertisements/default_ad.mp4
+
+# Machine Learning & YOLO weights (large files)
+*.pt
+*.onnx
+*.engine
+runs/
+
+# Operating System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

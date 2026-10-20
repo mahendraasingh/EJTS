@@ -1,0 +1,16 @@
+# Core Web & API
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.1.1
+Flask-Cors>=4.0.0
+Werkzeug>=3.0.0
+python-dotenv>=1.0.0
+
+# Computer Vision & Machine Learning
+opencv-python>=4.8.0
+ultralytics>=8.1.0
+numpy>=1.24.0
+Pillow>=9.5.0
+
+# Utilities & Testing
+pytest>=7.4.0
+requests>=2.31.0

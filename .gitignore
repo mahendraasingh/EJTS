@@ -1,0 +1,10 @@
+# Root gitignore
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.sqlite3
+*.db
+instance/
+*.pt
+.env
