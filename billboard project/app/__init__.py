@@ -35,6 +35,9 @@ def create_app(config_class=DevelopmentConfig):
     from app.routes.analytics import analytics_bp
     app.register_blueprint(analytics_bp)
 
+    from app.routes.settings import settings_bp
+    app.register_blueprint(settings_bp)
+
     # Global error handlers
     @app.errorhandler(400)
     def bad_request(error):

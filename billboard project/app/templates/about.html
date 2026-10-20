@@ -1,24 +1,123 @@
 {% extends "base.html" %}
 
 {% block title %}About & Architecture - Smart Billboard AI{% endblock %}
-{% block page_title %}About & Architecture{% endblock %}
-{% block page_subtitle %}System pipeline, metric definitions, and privacy disclosures{% endblock %}
+{% block page_title %}System Architecture & Methodology{% endblock %}
+{% block page_subtitle %}Edge computer vision pipeline, technical design, metric definitions, and privacy ethics{% endblock %}
 
 {% block content %}
-<div class="about-container">
-    <div class="card">
-        <h3><i class="fa-solid fa-microchip"></i> System Architecture</h3>
-        <p>This project implements an end-to-end edge analytics pipeline on a standard Windows laptop:</p>
-        <ol style="margin-top: 10px; padding-left: 20px; line-height: 1.8;">
-            <li><strong>Video Capture:</strong> Continuous webcam frame acquisition via OpenCV.</li>
-            <li><strong>Object Detection:</strong> Ultralytics YOLOv8 inference targeting the person class.</li>
-            <li><strong>Centroid / IoU Tracking:</strong> Temporary tracking IDs to prevent duplicate counts across continuous frames.</li>
-            <li><strong>Monitoring Zone (ROI):</strong> Region-of-interest evaluation to distinguish casual passersby from engaged presence.</li>
-            <li><strong>Session Lifecycle:</strong> Session initialization on entry, grace period timeout on departure, and duration calculation.</li>
-            <li><strong>Advertisement Attribution:</strong> Dynamic association with the currently playing billboard advertisement.</li>
-            <li><strong>Data Persistence:</strong> Storage in local SQLite database via SQLAlchemy.</li>
-            <li><strong>Live Dashboard:</strong> Periodic polling and Chart.js visualizations.</li>
-        </ol>
+<div class="about-page-container" style="max-width: 960px;">
+    
+    <!-- Hero Project Summary -->
+    <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border-color: rgba(99, 102, 241, 0.3);">
+        <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 14px;">
+            <div class="logo-icon" style="width: 50px; height: 50px; font-size: 22px;">
+                <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 18px; color: #fff;">Smart Billboard AI Analytics</h2>
+                <p style="color: var(--text-muted); font-size: 13px;">College Capstone / Production-Grade Edge Computer Vision Project</p>
+            </div>
+        </div>
+        <p style="font-size: 14px; line-height: 1.7; color: var(--text-main);">
+            Smart Billboard AI is a self-contained edge application designed for high-density public digital signage. By leveraging a standard laptop's built-in webcam and optimized CPU-based neural inference, it quantifies audience engagement without requiring expensive GPU servers, cloud APIs, or proprietary sensors.
+        </p>
+    </div>
+
+    <!-- Technical Pipeline -->
+    <div class="card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+            <i class="fa-solid fa-diagram-project" style="color: #6366f1; margin-right: 8px;"></i> End-to-End Processing Pipeline
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 16px; line-height: 1.6; font-size: 13px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">1</span>
+                <div>
+                    <strong style="color: #fff;">Webcam Video Capture (OpenCV):</strong>
+                    <div style="color: var(--text-muted);">Frames are captured in a dedicated background daemon thread via OpenCV VideoCapture at 640x480 resolution to prevent blocking HTTP endpoints.</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">2</span>
+                <div>
+                    <strong style="color: #fff;">Ultralytics YOLOv8 Neural Inference:</strong>
+                    <div style="color: var(--text-muted);">YOLOv8 nano (yolov8n.pt) processes frames targeting class 0 (Person) with configurable confidence threshold (default 0.45), running efficiently on standard multi-core laptop CPUs.</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">3</span>
+                <div>
+                    <strong style="color: #fff;">Centroid Proximity Tracking & Occlusion Handling:</strong>
+                    <div style="color: var(--text-muted);">Assigns temporary, persistent tracking IDs (e.g. #101) across consecutive video frames using Euclidean distance matching. Maintains state through a 2.5s occlusion tolerance window to prevent duplicate counts.</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">4</span>
+                <div>
+                    <strong style="color: #fff;">Central Monitoring Zone (ROI) Evaluation:</strong>
+                    <div style="color: var(--text-muted);">Evaluates person centroids against the calibrated central monitoring zone (default central 60% of frame) to isolate engaged viewers from distant background passersby.</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">5</span>
+                <div>
+                    <strong style="color: #fff;">Audience Session Lifecycle & Advertisement Attribution:</strong>
+                    <div style="color: var(--text-muted);">Upon entering the zone, a ViewerSession episode is recorded in SQLite and attributed dynamically to the currently visible billboard advertisement. When the person departs, duration is computed from exact timestamps.</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <span class="badge badge-info" style="min-width: 30px; justify-content: center;">6</span>
+                <div>
+                    <strong style="color: #fff;">Live Web Dashboards & Analytics Reporting:</strong>
+                    <div style="color: var(--text-muted);">Metrics are aggregated across selectable time windows (Today, 7D, 30D, All) and rendered using responsive Chart.js visualizations, with raw CSV export functionality.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Definitions vs Attention Truth -->
+    <div class="card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+            <i class="fa-solid fa-calculator" style="color: #10b981; margin-right: 8px;"></i> Metric Definitions & Disclosures
+        </h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; font-size: 13px;">
+            <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <strong style="color: #34d399;">Estimated Presence Duration:</strong>
+                <p style="color: var(--text-muted); margin-top: 4px;">
+                    The continuous duration in seconds a person remains inside the camera's monitoring zone. <em>Academic note:</em> Presence duration indicates proximity and orientation toward the display, not guaranteed eye gaze or cognitive attention.
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <strong style="color: #38bdf8;">Zone Occupancy vs. FOV Count:</strong>
+                <p style="color: var(--text-muted); margin-top: 4px;">
+                    <strong>FOV Count:</strong> All detected individuals in the camera's wide view. <strong>Zone Occupancy:</strong> Only individuals positioned within the calibrated audience interaction region.
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <strong style="color: #fbbf24;">Completed Sessions vs. Bounce:</strong>
+                <p style="color: var(--text-muted); margin-top: 4px;">
+                    Transitory glances shorter than 1.0 second are discarded to filter out noise, rapid strides, or detection flicker.
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <strong style="color: #a78bfa;">Audience Share %:</strong>
+                <p style="color: var(--text-muted); margin-top: 4px;">
+                    The percentage of total audience sessions captured by a specific campaign relative to all campaigns running in the selected timeframe.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy & Ethical Safeguards -->
+    <div class="card" style="margin-bottom: 24px; border-left: 4px solid #10b981;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #10b981;">
+            <i class="fa-solid fa-user-shield" style="margin-right: 8px;"></i> Privacy-by-Design Architecture
+        </h3>
+        <ul style="padding-left: 20px; line-height: 1.8; font-size: 13px; color: var(--text-muted);">
+            <li><strong>No Facial Recognition:</strong> The system does not detect faces, compute face embeddings, or match identities against any database.</li>
+            <li><strong>Ephemeral Tracking IDs:</strong> Temporary numerical identifiers (e.g. #42) exist solely in RAM while the individual is visible and expire automatically upon departure.</li>
+            <li><strong>No Video Recording:</strong> Raw webcam frames are processed immediately in memory and discarded; no video files or user photographs are saved to disk.</li>
+            <li><strong>100% Local Inference:</strong> All neural weights run directly on the laptop CPU; zero images or telemetry are transmitted to external cloud servers.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

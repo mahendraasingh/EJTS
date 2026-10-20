@@ -1,11 +1,139 @@
 {% extends "base.html" %}
 
 {% block title %}Live AI Monitoring - Smart Billboard AI{% endblock %}
-{% block page_title %}Live Computer Vision Monitor{% endblock %}
-{% block page_subtitle %}Real-time webcam inference, person tracking, and monitoring zone occupancy{% endblock %}
+{% block page_title %}Live AI Computer Vision Monitor{% endblock %}
+{% block page_subtitle %}Real-time webcam inference, YOLOv8 person tracking, and monitoring zone evaluation{% endblock %}
 
 {% block content %}
-<div class="monitoring-container">
-    <div class="loading-state">Initializing camera feed & AI status...</div>
+<div class="monitoring-page-container">
+    <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start;">
+        
+        <!-- Left: Live Video Feed Card -->
+        <div class="card" style="padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="live-indicator"></span>
+                    <h3 style="font-size: 15px; font-weight: 600;">Live Vision Inference Stream</h3>
+                    <span class="badge badge-info" id="feedFpsBadge">-- FPS</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="refreshStream()" title="Reload Stream">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="toggleFeedFullscreen()" title="Fullscreen Video">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Frame Container -->
+            <div id="videoFeedWrapper" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <img id="liveVideoFeed" src="/video_feed" alt="Live Computer Vision Stream" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+
+            <!-- Frame Legend & Privacy Disclosure -->
+            <div style="margin-top: 14px; padding: 10px 14px; background: rgba(0, 0, 0, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px;">
+                <div style="display: flex; gap: 14px; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; border: 2px solid #10b981; border-radius: 2px;"></span> Inside Zone (Audience)
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; border: 2px solid #f59e0b; border-radius: 2px;"></span> In FOV (Passerby)
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; border: 2px solid #6366f1; border-radius: 2px;"></span> Monitoring Zone (ROI)
+                    </span>
+                </div>
+                <span style="color: var(--text-dim);">
+                    <i class="fa-solid fa-shield-halved"></i> Privacy-Safe: No raw video or face crops stored
+                </span>
+            </div>
+        </div>
+
+        <!-- Right: Control Panel & ROI Settings -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Pipeline Control Card -->
+            <div class="card">
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 16px;">
+                    <i class="fa-solid fa-sliders" style="color: #6366f1; margin-right: 8px;"></i> Vision Controls
+                </h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" id="startPipelineBtn" onclick="startPipeline()" style="width: 100%; justify-content: center;">
+                        <i class="fa-solid fa-play"></i> Start Vision Pipeline
+                    </button>
+                    <button class="btn btn-secondary" id="stopPipelineBtn" onclick="stopPipeline()" style="width: 100%; justify-content: center;">
+                        <i class="fa-solid fa-stop"></i> Stop Vision Pipeline
+                    </button>
+                </div>
+
+                <!-- Telemetry Stats -->
+                <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">Current Occupancy:</span>
+                        <strong id="liveOccVal" style="color: #10b981;">0 viewers</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">Detected in FOV:</span>
+                        <strong id="liveDetVal">0 people</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">Camera Device:</span>
+                        <span id="liveCamIndexVal" class="badge badge-info">Index 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">YOLO Model:</span>
+                        <span id="liveYoloVal" class="badge badge-success">YOLOv8n (CPU)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Zone (ROI) Configuration Card -->
+            <div class="card">
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">
+                    <i class="fa-solid fa-crop-simple" style="color: #06b6d4; margin-right: 8px;"></i> Audience Zone (ROI)
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                    Define the region-of-interest where detected individuals are attributed to the active billboard advertisement.
+                </p>
+
+                <form onsubmit="handleUpdateZone(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 11px;">X1 (Left)</label>
+                            <input type="number" id="zoneX1" class="form-control" step="0.05" min="0" max="0.9" value="0.20" required>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 11px;">Y1 (Top)</label>
+                            <input type="number" id="zoneY1" class="form-control" step="0.05" min="0" max="0.9" value="0.15" required>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 11px;">X2 (Right)</label>
+                            <input type="number" id="zoneX2" class="form-control" step="0.05" min="0.1" max="1.0" value="0.80" required>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 11px;">Y2 (Bottom)</label>
+                            <input type="number" id="zoneY2" class="form-control" step="0.05" min="0.1" max="1.0" value="0.90" required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 6px;">
+                        <button type="button" class="btn btn-secondary" style="flex: 1; font-size: 12px;" onclick="resetDefaultZone()">
+                            Reset
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 12px;">
+                            Apply Zone
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
 {% endblock %}

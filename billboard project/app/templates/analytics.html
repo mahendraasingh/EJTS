@@ -1,11 +1,136 @@
 {% extends "base.html" %}
 
-{% block title %}Deep Analytics - Smart Billboard AI{% endblock %}
+{% block title %}Deep Audience Analytics - Smart Billboard AI{% endblock %}
 {% block page_title %}Deep Audience Analytics{% endblock %}
-{% block page_subtitle %}Historical presence durations, session attributions, and campaign comparisons{% endblock %}
+{% block page_subtitle %}Historical presence durations, session attributions, and campaign performance reports{% endblock %}
 
 {% block content %}
-<div class="analytics-container">
-    <div class="loading-state">Loading audience analytics...</div>
+<div class="analytics-page-container">
+    <!-- Action / Filter Toolbar -->
+    <div class="card" style="margin-bottom: 24px; padding: 18px 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <!-- Date Filters -->
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Timeframe:</span>
+                <div class="btn-group" style="display: flex; gap: 4px;">
+                    <button class="btn btn-secondary filter-btn" data-preset="today" onclick="changeAnalyticsPreset('today')">Today</button>
+                    <button class="btn btn-secondary filter-btn active" data-preset="7d" onclick="changeAnalyticsPreset('7d')">7 Days</button>
+                    <button class="btn btn-secondary filter-btn" data-preset="30d" onclick="changeAnalyticsPreset('30d')">30 Days</button>
+                    <button class="btn btn-secondary filter-btn" data-preset="all" onclick="changeAnalyticsPreset('all')">All Time</button>
+                </div>
+            </div>
+
+            <!-- Export & Refresh -->
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-secondary" onclick="loadAnalyticsData()">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
+                <button class="btn btn-primary" onclick="downloadCSV()">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 28px;">
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <h3 style="font-size: 15px; font-weight: 600;"><i class="fa-solid fa-chart-line" style="color: #6366f1; margin-right: 8px;"></i> Audience Engagement Over Time</h3>
+                <span id="analyticsDateRangeLabel" style="font-size: 11px; color: var(--text-dim);">Selected Window</span>
+            </div>
+            <div style="height: 290px; position: relative;">
+                <canvas id="deepActivityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <h3 style="font-size: 15px; font-weight: 600;"><i class="fa-solid fa-chart-pie" style="color: #10b981; margin-right: 8px;"></i> Audience Share %</h3>
+                <span style="font-size: 11px; color: var(--text-dim);">By campaign</span>
+            </div>
+            <div style="height: 290px; position: relative;">
+                <canvas id="deepShareChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Performance Breakdown Table -->
+    <div class="card" style="margin-bottom: 28px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h3 style="font-size: 15px; font-weight: 600;">
+                <i class="fa-solid fa-table-list" style="color: #06b6d4; margin-right: 8px;"></i> Campaign Performance Breakdown
+            </h3>
+            <span style="font-size: 12px; color: var(--text-dim);">Computed directly from SQLite database records</span>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign Name</th>
+                        <th>Category</th>
+                        <th>Format</th>
+                        <th>Total Viewers</th>
+                        <th>Completed</th>
+                        <th>Total Exposure</th>
+                        <th>Avg Duration</th>
+                        <th>Max Duration</th>
+                        <th>Audience Share</th>
+                    </tr>
+                </thead>
+                <tbody id="campaignPerformanceBody">
+                    <tr>
+                        <td colspan="9" class="loading-state">Aggregating campaign analytics...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Complete Session History Log -->
+    <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h3 style="font-size: 15px; font-weight: 600;">
+                <i class="fa-solid fa-history" style="color: #ec4899; margin-right: 8px;"></i> Historical Viewer Session Logs
+            </h3>
+            <div style="font-size: 12px; color: var(--text-dim);">
+                Showing recent verified presence sessions
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Tracking ID</th>
+                        <th>Attributed Advertisement</th>
+                        <th>Arrival (UTC)</th>
+                        <th>Departure (UTC)</th>
+                        <th>Presence Duration</th>
+                        <th>Status</th>
+                        <th>Exit Reason</th>
+                    </tr>
+                </thead>
+                <tbody id="fullSessionsTableBody">
+                    <tr>
+                        <td colspan="8" class="loading-state">Loading historical sessions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 13px;">
+            <span id="paginationInfo" style="color: var(--text-dim);">Showing 0-0 of 0</span>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" id="prevPageBtn" onclick="prevPage()" disabled>Previous</button>
+                <button class="btn btn-secondary" id="nextPageBtn" onclick="nextPage()" disabled>Next</button>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% endblock %}

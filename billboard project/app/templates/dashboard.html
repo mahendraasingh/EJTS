@@ -2,10 +2,177 @@
 
 {% block title %}Overview Dashboard - Smart Billboard AI{% endblock %}
 {% block page_title %}Overview Dashboard{% endblock %}
-{% block page_subtitle %}Live audience engagement, occupancy, and campaign performance{% endblock %}
+{% block page_subtitle %}Real-time audience metrics, zone occupancy, and campaign performance{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
-    <div class="loading-state">Initializing Dashboard Metrics...</div>
+    <!-- Live HUD Status Bar -->
+    <div class="card" style="margin-bottom: 24px; padding: 16px 24px; background: linear-gradient(90deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="live-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
+                    <strong style="font-size: 13px;">AI Pipeline:</strong>
+                    <span id="hudPipelineStatus" class="badge badge-success">Running</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-camera" style="color: #6366f1;"></i>
+                    <strong style="font-size: 13px;">Camera:</strong>
+                    <span id="hudCameraStatus" style="font-size: 13px; color: var(--text-muted);">Detecting...</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-tv" style="color: #06b6d4;"></i>
+                    <strong style="font-size: 13px;">Current Billboard Ad:</strong>
+                    <span id="hudCurrentAd" class="badge badge-info" style="font-size: 12px;">Welcome Screen</span>
+                </div>
+            </div>
+
+            <!-- Preset Filter -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Timeframe:</span>
+                <div class="btn-group" style="display: flex; gap: 4px;">
+                    <button class="btn btn-secondary filter-btn active" data-preset="today" onclick="changePreset('today')">Today</button>
+                    <button class="btn btn-secondary filter-btn" data-preset="7d" onclick="changePreset('7d')">7 Days</button>
+                    <button class="btn btn-secondary filter-btn" data-preset="30d" onclick="changePreset('30d')">30 Days</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6 Primary Metric Cards -->
+    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <!-- Live Occupancy -->
+        <div class="card metric-card" style="border-top: 3px solid #10b981;">
+            <div class="metric-header">
+                <span>Zone Occupancy</span>
+                <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                    <i class="fa-solid fa-user-group"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricLiveOccupancy" style="color: #34d399;">0</div>
+            <div class="metric-footer">People in monitoring zone now</div>
+        </div>
+
+        <!-- Live Detected People -->
+        <div class="card metric-card" style="border-top: 3px solid #06b6d4;">
+            <div class="metric-header">
+                <span>FOV Detected</span>
+                <div class="metric-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricLiveDetected">0</div>
+            <div class="metric-footer">Total people in camera view</div>
+        </div>
+
+        <!-- Total Sessions -->
+        <div class="card metric-card" style="border-top: 3px solid #6366f1;">
+            <div class="metric-header">
+                <span>Audience Sessions</span>
+                <div class="metric-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricTotalSessions">0</div>
+            <div class="metric-footer">Total presence episodes</div>
+        </div>
+
+        <!-- Completed Sessions -->
+        <div class="card metric-card" style="border-top: 3px solid #8b5cf6;">
+            <div class="metric-header">
+                <span>Completed Sessions</span>
+                <div class="metric-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+                    <i class="fa-solid fa-check-double"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricCompletedSessions">0</div>
+            <div class="metric-footer">Stayed >= 1.0s in zone</div>
+        </div>
+
+        <!-- Avg Presence Duration -->
+        <div class="card metric-card" style="border-top: 3px solid #f59e0b;">
+            <div class="metric-header">
+                <span>Avg Duration</span>
+                <div class="metric-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                    <i class="fa-solid fa-stopwatch"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricAvgDuration">0.0s</div>
+            <div class="metric-footer">Average presence per viewer</div>
+        </div>
+
+        <!-- Total Exposure Time -->
+        <div class="card metric-card" style="border-top: 3px solid #ec4899;">
+            <div class="metric-header">
+                <span>Total Exposure</span>
+                <div class="metric-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+            </div>
+            <div class="metric-val" id="metricTotalDuration">0s</div>
+            <div class="metric-footer">Aggregated audience time</div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 28px;">
+        <!-- Timeseries Line Chart -->
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+                <h3 style="font-size: 15px; font-weight: 600;"><i class="fa-solid fa-chart-area" style="color: #6366f1; margin-right: 8px;"></i> Audience Activity Over Time</h3>
+                <span style="font-size: 11px; color: var(--text-dim);">Daily sessions & duration</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Ad Share Doughnut Chart -->
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+                <h3 style="font-size: 15px; font-weight: 600;"><i class="fa-solid fa-chart-pie" style="color: #10b981; margin-right: 8px;"></i> Campaign Share</h3>
+                <span style="font-size: 11px; color: var(--text-dim);">Sessions per Ad</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="shareChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Session Activity Feed -->
+    <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h3 style="font-size: 15px; font-weight: 600;">
+                <i class="fa-solid fa-list-check" style="color: #06b6d4; margin-right: 8px;"></i> Recent Viewer Sessions
+            </h3>
+            <a href="{{ url_for('main.analytics_view') }}" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px;">
+                View All & Export <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tracking ID</th>
+                        <th>Attributed Advertisement</th>
+                        <th>Arrival Time</th>
+                        <th>Departure Time</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Exit Reason</th>
+                    </tr>
+                </thead>
+                <tbody id="recentSessionsTableBody">
+                    <tr>
+                        <td colspan="7" class="loading-state">Listening for viewer sessions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
