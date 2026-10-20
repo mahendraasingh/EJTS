@@ -18,6 +18,8 @@ class CameraService:
         self.source_mode = "webcam"
         self.video_path = None
         self.video_filename = None
+        self.video_finished = False
+        self.loop_video = False
 
         self.cap = None
         self.is_running = False
@@ -35,6 +37,7 @@ class CameraService:
         """Switch video input between physical webcam and a cached video file."""
         with self.frame_lock:
             self.source_mode = mode
+            self.video_finished = False
             if mode == "video_file" and video_path:
                 self.video_path = str(video_path)
                 self.video_filename = filename or Path(video_path).name
@@ -43,13 +46,27 @@ class CameraService:
                 self.video_filename = None
             self._need_reconnect = True
 
+    def replay_video(self):
+        """Rewind cached video file to frame 0 and restart 1-time playback."""
+        with self.frame_lock:
+            if self.cap and self.source_mode == "video_file":
+                try:
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    self.video_finished = False
+                    return True
+                except Exception:
+                    pass
+        return False
+
     def get_source_info(self):
         """Return active video feed configuration."""
         return {
             "source_mode": self.source_mode,
             "video_path": self.video_path,
             "video_filename": self.video_filename,
-            "camera_index": self.camera_index
+            "camera_index": self.camera_index,
+            "video_finished": self.video_finished,
+            "loop_video": self.loop_video
         }
 
     def start(self):
@@ -127,12 +144,22 @@ class CameraService:
                 self._init_camera()
 
             if self.is_camera_available and self.cap and self.cap.isOpened():
+                if self.source_mode == "video_file" and self.video_finished:
+                    # Video reached end of 1-time playback: hold frame and idle
+                    time.sleep(frame_interval)
+                    continue
+
                 ret, frame = self.cap.read()
 
-                # If reading a video file and reaching the end, rewind to frame 0 for seamless infinite loop
+                # If reading a video file and reaching the end:
                 if (not ret or frame is None) and self.source_mode == "video_file":
-                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                    ret, frame = self.cap.read()
+                    if self.loop_video:
+                        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        ret, frame = self.cap.read()
+                    else:
+                        self.video_finished = True
+                        time.sleep(frame_interval)
+                        continue
 
                 if ret and frame is not None:
                     # Resize if frame does not match target resolution
@@ -221,5 +248,7 @@ class CameraService:
             "width": self.width,
             "height": self.height,
             "actual_fps": self.actual_fps,
-            "error_message": self.error_message
+            "error_message": self.error_message,
+            "video_finished": self.video_finished,
+            "loop_video": self.loop_video
         }

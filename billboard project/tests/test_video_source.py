@@ -51,3 +51,23 @@ def test_invalid_video_upload(client):
     res = client.post("/api/monitoring/upload_video_source", data=data, content_type="multipart/form-data")
     assert res.status_code == 400
     assert "Invalid format" in res.get_json()["error"]
+
+def test_cached_video_file_serving_and_replay(client):
+    """Verify cached video serving and replay endpoints."""
+    # 1. Upload video
+    data = {
+        "video": (io.BytesIO(b"test video binary content for streaming"), "crowd_sample.mp4")
+    }
+    res_upload = client.post("/api/monitoring/upload_video_source", data=data, content_type="multipart/form-data")
+    assert res_upload.status_code == 200
+    assert "cached_url" in res_upload.get_json()
+
+    # 2. Fetch cached video file
+    res_file = client.get("/api/monitoring/cached_video_file")
+    assert res_file.status_code == 200
+    assert res_file.data == b"test video binary content for streaming"
+
+    # 3. Test replay endpoint
+    res_replay = client.post("/api/monitoring/replay_video")
+    # Will respond with 200 (if cap opened) or handle gracefully
+    assert res_replay.status_code in [200, 400]

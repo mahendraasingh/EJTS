@@ -2,7 +2,7 @@ import os
 import cv2
 import time
 from pathlib import Path
-from flask import Blueprint, Response, jsonify, request, current_app
+from flask import Blueprint, Response, jsonify, request, current_app, send_from_directory
 from werkzeug.utils import secure_filename
 from app.services.pipeline import pipeline_engine
 from app.models.setting import Setting
@@ -42,6 +42,42 @@ def monitoring_status():
 def get_source():
     """Return current video feed source info."""
     return jsonify(pipeline_engine.camera_service.get_source_info()), 200
+
+@monitoring_bp.route("/api/monitoring/cached_video_file")
+def get_cached_video_file():
+    """Stream or serve the currently active cached video file for HTML5 in-browser playback."""
+    source_info = pipeline_engine.camera_service.get_source_info()
+    video_path = source_info.get("video_path")
+    if not video_path or not Path(video_path).exists():
+        cache_dir = Path(current_app.config.get("INSTANCE_PATH", "instance")) / "video_cache"
+        if cache_dir.exists():
+            cached_files = sorted(cache_dir.glob("cached_input_*"), key=os.path.getmtime)
+            if cached_files:
+                video_path = str(cached_files[-1])
+        if not video_path or not Path(video_path).exists():
+            return jsonify({"error": "No cached video file found."}), 404
+
+    path_obj = Path(video_path)
+    return send_from_directory(
+        str(path_obj.parent),
+        path_obj.name,
+        mimetype="video/mp4",
+        as_attachment=False
+    )
+
+@monitoring_bp.route("/api/monitoring/replay_video", methods=["POST"])
+def replay_video():
+    """Rewind the cached video file to frame 0 and restart 1-time playback."""
+    success = pipeline_engine.camera_service.replay_video()
+    if success:
+        SystemEvent.log("camera", "Cached video rewound to frame 0 for replay.")
+        return jsonify({
+            "message": "Video playback rewound to start.",
+            "video_finished": False,
+            "source": pipeline_engine.camera_service.get_source_info()
+        }), 200
+    else:
+        return jsonify({"error": "Unable to replay video. Ensure a video file source is active."}), 400
 
 @monitoring_bp.route("/api/monitoring/source", methods=["POST"])
 def set_source():
@@ -93,6 +129,7 @@ def upload_video_source():
     return jsonify({
         "message": f"Video '{safe_name}' cached and activated as live input stream.",
         "filename": safe_name,
+        "cached_url": "/api/monitoring/cached_video_file",
         "source": pipeline_engine.camera_service.get_source_info()
     }), 200
 
