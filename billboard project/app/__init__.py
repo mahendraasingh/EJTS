@@ -29,6 +29,12 @@ def create_app(config_class=DevelopmentConfig):
     from app.routes.billboard import billboard_bp
     app.register_blueprint(billboard_bp)
 
+    from app.routes.monitoring import monitoring_bp
+    app.register_blueprint(monitoring_bp)
+
+    from app.routes.analytics import analytics_bp
+    app.register_blueprint(analytics_bp)
+
     # Global error handlers
     @app.errorhandler(400)
     def bad_request(error):
