@@ -28,10 +28,12 @@ def get_date_range(preset="7d", start_str=None, end_str=None):
         return now - timedelta(days=7), now
 
 def calculate_overview_metrics(start_dt, end_dt):
-    """Aggregate high-level audience metrics across the specified time window."""
+    """Aggregate high-level audience metrics across the specified time window.
+    Strictly filters for verified, authentic computer vision detections."""
     query = ViewerSession.query.filter(
         ViewerSession.start_time >= start_dt,
-        ViewerSession.start_time <= end_dt
+        ViewerSession.start_time <= end_dt,
+        ViewerSession.is_simulated == False
     )
 
     total_sessions = query.count()
@@ -46,7 +48,8 @@ def calculate_overview_metrics(start_dt, end_dt):
     ).filter(
         ViewerSession.start_time >= start_dt,
         ViewerSession.start_time <= end_dt,
-        ViewerSession.status == "completed"
+        ViewerSession.status == "completed",
+        ViewerSession.is_simulated == False
     ).first()
 
     total_duration = round(float(duration_stats[0] or 0.0), 1)
@@ -69,10 +72,14 @@ def calculate_overview_metrics(start_dt, end_dt):
     }
 
 def calculate_advertisement_breakdown(start_dt, end_dt):
-    """Calculate performance, share, and duration metrics grouped by advertisement."""
+    """Calculate performance, share, and duration metrics grouped by advertisement.
+    Strict Rule: Only generates deep analysis reports for advertisements where audience members
+    were actually verified and detected seeing the ad by the backend vision logic."""
     total_period_sessions = ViewerSession.query.filter(
         ViewerSession.start_time >= start_dt,
-        ViewerSession.start_time <= end_dt
+        ViewerSession.start_time <= end_dt,
+        ViewerSession.is_simulated == False,
+        ViewerSession.status == "completed"
     ).count()
 
     # Query all unarchived advertisements
@@ -83,10 +90,15 @@ def calculate_advertisement_breakdown(start_dt, end_dt):
         ad_sessions = ViewerSession.query.filter(
             ViewerSession.advertisement_id == ad.id,
             ViewerSession.start_time >= start_dt,
-            ViewerSession.start_time <= end_dt
+            ViewerSession.start_time <= end_dt,
+            ViewerSession.is_simulated == False
         )
         count = ad_sessions.count()
         completed = ad_sessions.filter_by(status="completed").count()
+
+        # Conditionally create the deep analysis report ONLY if people actually saw the ad
+        if count == 0 and completed == 0:
+            continue
 
         dur_stats = db.session.query(
             func.sum(ViewerSession.estimated_duration),
@@ -96,13 +108,14 @@ def calculate_advertisement_breakdown(start_dt, end_dt):
             ViewerSession.advertisement_id == ad.id,
             ViewerSession.start_time >= start_dt,
             ViewerSession.start_time <= end_dt,
-            ViewerSession.status == "completed"
+            ViewerSession.status == "completed",
+            ViewerSession.is_simulated == False
         ).first()
 
         tot_dur = round(float(dur_stats[0] or 0.0), 1)
         avg_dur = round(float(dur_stats[1] or 0.0), 1)
         max_dur = round(float(dur_stats[2] or 0.0), 1)
-        share = round((count / total_period_sessions * 100), 1) if total_period_sessions > 0 else 0.0
+        share = round((completed / total_period_sessions * 100), 1) if total_period_sessions > 0 else 0.0
 
         results.append({
             "ad_id": ad.id,
@@ -115,7 +128,8 @@ def calculate_advertisement_breakdown(start_dt, end_dt):
             "avg_duration": avg_dur,
             "max_duration": max_dur,
             "session_share_percent": share,
-            "is_active": ad.is_active
+            "is_active": ad.is_active,
+            "verified_detection": True
         })
 
     # Sort by total sessions descending
@@ -123,10 +137,11 @@ def calculate_advertisement_breakdown(start_dt, end_dt):
     return results
 
 def calculate_timeseries(start_dt, end_dt):
-    """Aggregate session counts by day for Chart.js rendering."""
+    """Aggregate authentic session counts by day for Chart.js rendering."""
     sessions = ViewerSession.query.filter(
         ViewerSession.start_time >= start_dt,
-        ViewerSession.start_time <= end_dt
+        ViewerSession.start_time <= end_dt,
+        ViewerSession.is_simulated == False
     ).order_by(ViewerSession.start_time.asc()).all()
 
     buckets = {}
@@ -156,10 +171,11 @@ def calculate_timeseries(start_dt, end_dt):
     return chart_data
 
 def generate_sessions_csv(start_dt, end_dt):
-    """Export audience presence sessions to CSV string."""
+    """Export verified audience presence sessions to CSV string."""
     sessions = ViewerSession.query.filter(
         ViewerSession.start_time >= start_dt,
-        ViewerSession.start_time <= end_dt
+        ViewerSession.start_time <= end_dt,
+        ViewerSession.is_simulated == False
     ).order_by(ViewerSession.start_time.desc()).all()
 
     output = io.StringIO()
@@ -167,7 +183,7 @@ def generate_sessions_csv(start_dt, end_dt):
     writer.writerow([
         "session_id", "session_uuid", "tracking_id", "advertisement_id",
         "advertisement_name", "start_time", "end_time",
-        "estimated_duration_seconds", "status", "exit_reason", "is_simulated"
+        "estimated_duration_seconds", "status", "exit_reason", "verified_ai_detection"
     ])
 
     for s in sessions:
@@ -182,7 +198,8 @@ def generate_sessions_csv(start_dt, end_dt):
             s.estimated_duration,
             s.status,
             s.exit_reason or "",
-            "true" if s.is_simulated else "false"
+            "verified"
         ])
 
     return output.getvalue()
+

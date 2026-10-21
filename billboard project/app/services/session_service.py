@@ -28,8 +28,16 @@ class SessionManager:
                     # New audience member entered monitoring zone
                     self._start_session(tid, current_ad_id, now_dt, now_time)
                 else:
-                    # Update heartbeat for member currently in zone
-                    self.active_sessions[tid]["last_seen_in_zone"] = now_time
+                    # Check if active advertisement changed while viewer was watching
+                    sess = self.active_sessions[tid]
+                    if sess.get("ad_id") != current_ad_id:
+                        # Ad transitioned/completed: finalize session for previous ad
+                        self._end_session(tid, now_dt, reason="ad_transition")
+                        # Start new session attributed to the newly active ad
+                        self._start_session(tid, current_ad_id, now_dt, now_time)
+                    else:
+                        # Update heartbeat for member currently in zone
+                        sess["last_seen_in_zone"] = now_time
 
         # Check for sessions whose tracks have left the zone or expired
         terminated_ids = []

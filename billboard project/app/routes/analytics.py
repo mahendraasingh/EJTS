@@ -63,7 +63,7 @@ def get_recent_sessions():
     offset = max(0, int(request.args.get("offset", 0)))
     ad_id = request.args.get("advertisement_id")
 
-    query = ViewerSession.query
+    query = ViewerSession.query.filter_by(is_simulated=False)
     if ad_id:
         query = query.filter_by(advertisement_id=int(ad_id))
 
