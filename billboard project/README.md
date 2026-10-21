@@ -20,9 +20,8 @@ Designed for edge deployment on standard laptops using the built-in webcam and C
 5. **Campaign Management Suite (`/advertisements`)**: Upload images and videos, preview media, set display durations, schedule campaign dates, reorder playlist, and soft-delete/archive.
 6. **Executive Overview Dashboard (`/dashboard`)**: Real-time KPI telemetry (Zone Occupancy, FOV detections, completed sessions, average presence duration) with Chart.js timeseries.
 7. **Live Vision Monitor (`/monitoring`)**: Live MJPEG camera feed with real-time bounding boxes, centroid crosshairs, and interactive ROI zone calibration.
-8. **Deep Analytics & CSV Export (`/analytics`)**: Detailed campaign breakdown, duration percentiles, audience share %, and one-click CSV report export.
+8. **Authentic Deep Analytics & CSV Export (`/analytics`)**: Starts with everything at zero on project startup; campaign analysis reports are generated dynamically and exclusively based on the backend computer vision logic when people are detected seeing the ad.
 9. **Calibration & Settings Manager (`/settings`)**: Fine-tune camera device indices, detection confidence, inference FPS, and session timeouts.
-10. **Offline College Demo Generator (`scripts/simulate_data.py`)**: Generates realistic demonstration presence data for presentations without requiring people in front of the camera.
 
 ---
 
@@ -68,13 +67,10 @@ call .venv\Scripts\activate.bat
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Initialize SQLite database schema and default settings
+# 3. Initialize SQLite database schema and default settings (starts with zero sessions)
 python scripts\initialize_db.py
 
-# 4. (Optional) Populate demonstration audience data for presentations
-python scripts\simulate_data.py
-
-# 5. Launch the application
+# 4. Launch the application
 python app.py
 ```
 
