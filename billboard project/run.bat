@@ -29,7 +29,6 @@ echo.
 echo =====================================================================
 echo   SMART BILLBOARD AI SERVER READY
 echo   Dashboard URL: http://127.0.0.1:5000
-echo   Billboard Kiosk URL: http://127.0.0.1:5000/billboard
 echo   Press Ctrl+C to stop the server at any time.
 echo =====================================================================
 echo.

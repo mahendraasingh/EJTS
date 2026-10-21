@@ -80,7 +80,6 @@ python app.py
 
 Open your browser to:
 - **Dashboard**: `http://127.0.0.1:5000`
-- **Billboard Display**: `http://127.0.0.1:5000/billboard`
 - **Live AI Monitor**: `http://127.0.0.1:5000/monitoring`
 - **Campaign Manager**: `http://127.0.0.1:5000/advertisements`
 - **Deep Analytics**: `http://127.0.0.1:5000/analytics`
