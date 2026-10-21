@@ -10,15 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
     initUploadedVideoPlayer();
     fetchMonitoringStatus();
     fetchSourceInfo();
+    fetchLivePersonTelemetry();
     
     // Auto-refresh stream once on load
     refreshStream();
 
-    // Polling interval for live HUD telemetry
+    // Polling interval for live HUD & person behavioral telemetry
     monitorPollInterval = setInterval(() => {
         fetchMonitoringStatus();
         fetchSourceInfo();
-    }, 1500);
+        fetchLivePersonTelemetry();
+    }, 1000);
 });
 
 // --------------------------------------------------------------------------
@@ -447,4 +449,165 @@ function toggleFeedFullscreen() {
 function setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
+}
+
+// --------------------------------------------------------------------------
+// Live Person Behavioral Dashboard & Event Recorder (Real-time reading)
+// --------------------------------------------------------------------------
+let isLogPaused = false;
+
+async function fetchLivePersonTelemetry() {
+    try {
+        const res = await fetch("/api/monitoring/live_person_telemetry");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const metrics = data.metrics || {};
+        const persons = data.active_persons || [];
+        const logs = data.activity_log || [];
+
+        // Update Top Summary KPI Cards
+        setText("kpiActivePersons", metrics.detected_count || 0);
+        setText("kpiZoneViewers", metrics.zone_occupancy || 0);
+        setText("kpiAvgDwell", `${metrics.avg_dwell_sec || 0.0}s`);
+        setText("kpiAttentionIndex", `${metrics.avg_engagement_pct || 0}%`);
+        setText("kpiDominantAction", metrics.dominant_action || "Awaiting camera subject...");
+        setText("activeCountBadge", `${metrics.detected_count || 0} Active`);
+
+        // Render Individual Person Cards
+        renderLivePersonCards(persons);
+
+        // Render Real-Time Activity Log Feed
+        if (!isLogPaused) {
+            renderLiveActivityLog(logs);
+        }
+    } catch (e) {
+        console.warn("Failed to fetch live person telemetry:", e);
+    }
+}
+
+function renderLivePersonCards(persons) {
+    const container = document.getElementById("livePersonCardsContainer");
+    if (!container) return;
+
+    if (!persons || persons.length === 0) {
+        container.innerHTML = `
+            <div class="empty-telemetry-box" style="text-align: center; padding: 36px 20px; color: var(--text-dim); font-size: 12px; border: 1px dashed var(--border-subtle); border-radius: 6px;">
+                <i class="fa-solid fa-user-slash" style="font-size: 28px; margin-bottom: 8px; color: var(--text-dim); opacity: 0.6;"></i>
+                <p style="margin: 0; font-weight: 500;">No subjects currently in camera view</p>
+                <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--text-muted);">Stand in front of the camera or upload a crowd video to view live behavioral telemetry.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = persons.map(p => {
+        const inZone = !!p.in_zone;
+        const avatarBg = inZone ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
+        const avatarColor = inZone ? "#10b981" : "#f59e0b";
+        const zoneBadge = inZone
+            ? `<span class="badge badge-success" style="font-size: 10.5px;"><i class="fa-solid fa-circle-check"></i> Audience ROI Zone</span>`
+            : `<span class="badge badge-warning" style="font-size: 10.5px;"><i class="fa-solid fa-person-walking"></i> Passerby in FOV</span>`;
+
+        let actionIcon = "fa-person-running";
+        if (p.action.includes("Dwelling") || p.action.includes("High Attention")) actionIcon = "fa-star";
+        else if (p.action.includes("Looking") || p.action.includes("Engaged")) actionIcon = "fa-eye";
+        else if (p.action.includes("Approaching")) actionIcon = "fa-arrow-down-long";
+        else if (p.action.includes("Passerby")) actionIcon = "fa-person-walking";
+
+        let scoreColor = "#f59e0b";
+        if (p.engagement_score >= 70) scoreColor = "#10b981";
+        else if (p.engagement_score >= 40) scoreColor = "#38bdf8";
+
+        return `
+            <div class="person-card" style="background: rgba(255, 255, 255, 0.025); border: 1px solid var(--border-subtle); border-left: 3px solid ${avatarColor}; border-radius: 6px; padding: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: ${avatarBg}; color: ${avatarColor}; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <span style="font-size: 13px; font-weight: 700; color: #fff;">Person #${p.tracking_id}</span>
+                        ${zoneBadge}
+                    </div>
+                    <span class="badge badge-secondary" style="font-size: 10px;">
+                        <i class="fa-solid fa-ruler-horizontal"></i> ${p.proximity}
+                    </span>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                    <span style="font-size: 11.5px; font-weight: 600; color: #38bdf8; display: inline-flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid ${actionIcon}"></i> ${p.action}
+                    </span>
+                    <span style="font-family: monospace; font-size: 11px; color: var(--text-dim);">
+                        Dwell: <strong style="color: #fff;">${p.dwell_seconds}s</strong> (Total: ${p.total_seconds}s)
+                    </span>
+                </div>
+
+                <!-- Engagement meter & speed -->
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 11px;">
+                    <span style="color: var(--text-dim); min-width: 60px;">Attention:</span>
+                    <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${p.engagement_score}%; background: ${scoreColor}; transition: width 0.3s ease;"></div>
+                    </div>
+                    <span style="font-weight: 700; color: ${scoreColor}; min-width: 35px; text-align: right;">${p.engagement_score}%</span>
+                    <span style="color: var(--text-muted); font-size: 10.5px; margin-left: 6px;">
+                        <i class="fa-solid fa-gauge"></i> ${p.speed_px_per_sec} px/s
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function renderLiveActivityLog(logs) {
+    const feed = document.getElementById("liveActivityLogFeed");
+    if (!feed) return;
+
+    if (!logs || logs.length === 0) {
+        feed.innerHTML = `
+            <div style="color: var(--text-dim); padding: 8px; text-align: center; font-style: italic;">
+                Recording initialized. Activity logs will appear here in real time...
+            </div>
+        `;
+        return;
+    }
+
+    feed.innerHTML = logs.map(item => {
+        let badgeColor = "#38bdf8";
+        let badgeBg = "rgba(56, 189, 248, 0.15)";
+        if (item.badge === "success") {
+            badgeColor = "#10b981";
+            badgeBg = "rgba(16, 185, 129, 0.15)";
+        } else if (item.badge === "warning") {
+            badgeColor = "#f59e0b";
+            badgeBg = "rgba(245, 158, 11, 0.15)";
+        } else if (item.badge === "primary") {
+            badgeColor = "#a855f7";
+            badgeBg = "rgba(168, 85, 247, 0.15)";
+        } else if (item.badge === "secondary") {
+            badgeColor = "#94a3b8";
+            badgeBg = "rgba(148, 163, 184, 0.15)";
+        }
+
+        return `
+            <div style="display: flex; align-items: flex-start; gap: 8px; padding: 4px 6px; border-radius: 4px; background: rgba(255,255,255,0.015);">
+                <span style="color: var(--text-dim); font-size: 10px; min-width: 52px;">[${item.time_str}]</span>
+                <span style="font-size: 9.5px; padding: 1px 5px; border-radius: 3px; background: ${badgeBg}; color: ${badgeColor}; text-transform: uppercase; font-weight: 600;">
+                    ${item.event_type}
+                </span>
+                <span style="color: #e2e8f0; flex: 1; word-break: break-word;">${item.message}</span>
+            </div>
+        `;
+    }).join("");
+}
+
+function clearLiveActivityLog() {
+    const feed = document.getElementById("liveActivityLogFeed");
+    if (feed) {
+        feed.innerHTML = `
+            <div style="color: var(--text-dim); padding: 8px; text-align: center; font-style: italic;">
+                Log cleared by user. New camera activities will be recorded below...
+            </div>
+        `;
+    }
 }
