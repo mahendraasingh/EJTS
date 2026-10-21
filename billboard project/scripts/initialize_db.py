@@ -32,7 +32,6 @@ def init_database():
                 "x2": 0.80,
                 "y2": 0.90
             }, "Region of interest coordinates (normalized relative 0.0 to 1.0)"),
-            "demonstration_mode": (False, "Enable simulated presence generator for offline demonstrations")
         }
 
         print(" * Checking and seeding default settings...")
