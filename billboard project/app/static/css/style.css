@@ -544,3 +544,77 @@ tr:hover td {
     padding: 40px;
     font-size: 14px;
 }
+
+/* ==========================================================================
+   ADVANCED 3D WEBGL CONSOLE & INTERACTIVE UI MICRO-INTERACTIONS
+   ========================================================================== */
+
+/* 3D Console Buttons */
+.btn-3d-view, .btn-3d-theme, .btn-3d-action {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-3d-view:hover, .btn-3d-theme:hover, .btn-3d-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-3d-view.active {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 14px var(--primary-glow);
+}
+
+.btn-3d-theme.active {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.btn-3d-action.active {
+    background: rgba(16, 185, 129, 0.25) !important;
+    color: #34d399 !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Interactive Card & Tile Micro-Elevations */
+.metric-card {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 0 18px rgba(99, 102, 241, 0.12);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Button Kinetic Click States */
+.btn:active {
+    transform: scale(0.97) !important;
+}
+
+/* Modern WebKit Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+

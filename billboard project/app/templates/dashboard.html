@@ -121,26 +121,82 @@
                 <h3 style="font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-cube" style="color: #6366f1;"></i>
                     3D Digital Twin & Spatial Telemetry
-                    <span class="badge badge-info" style="font-size: 10px; text-transform: uppercase;">WebGL Interactive</span>
+                    <span class="badge badge-info" style="font-size: 10px; text-transform: uppercase;">WebGL 360° Interactive</span>
                 </h3>
                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
-                    Interactive 3D billboard simulation rendering real-time audience telemetry, campaign broadcast, and spatial field particles. Move cursor over rig to tilt in 3D.
+                    Interactive 3D billboard simulation rendering real-time audience telemetry, campaign broadcast, and spatial field particles. Drag to orbit 360°, scroll to zoom, click model for kinetic shockwave.
                 </p>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 11px; color: var(--text-dim);"><i class="fa-solid fa-hand-pointer" style="margin-right: 4px;"></i> Mouse-Driven Tilt</span>
-                <button class="btn btn-secondary" id="reset3DViewBtn" onclick="reset3DView()" style="font-size: 11px; padding: 5px 12px;">
-                    <i class="fa-solid fa-arrows-rotate"></i> Reset Perspective
+            
+            <!-- Quick Action Toolbar -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-3d-action" id="btnAutoSpin" onclick="toggle3DAutoSpin()" title="Toggle Auto Orbital Spin" style="font-size: 11px; padding: 5px 10px;">
+                    <i class="fa-solid fa-rotate"></i> Auto-Spin
+                </button>
+                <button class="btn btn-secondary btn-3d-action" id="btnWireframe" onclick="toggle3DWireframe()" title="Toggle Cyber Wireframe Mesh" style="font-size: 11px; padding: 5px 10px;">
+                    <i class="fa-solid fa-border-all"></i> Wireframe
+                </button>
+                <button class="btn btn-primary" onclick="trigger3DPulse()" title="Trigger Kinetic Energy Shockwave" style="font-size: 11px; padding: 5px 12px;">
+                    <i class="fa-solid fa-bolt"></i> Pulse FX
+                </button>
+                <div class="btn-group" style="display: flex; gap: 4px;">
+                    <button class="btn btn-secondary" onclick="zoom3DIn()" title="Zoom In (+)" style="font-size: 11px; padding: 5px 9px;">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="zoom3DOut()" title="Zoom Out (-)" style="font-size: 11px; padding: 5px 9px;">
+                        <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button class="btn btn-secondary" id="reset3DViewBtn" onclick="reset3DView()" title="Reset Camera Perspective" style="font-size: 11px; padding: 5px 10px;">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Control Strip: Camera Angle Presets & Lighting Themes -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 12px;">
+            <!-- Angle Presets -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">View Angle:</span>
+                <button class="btn btn-secondary btn-3d-view active" data-view="perspective" onclick="set3DViewPreset('perspective')" style="padding: 3px 10px; font-size: 11px;">Perspective</button>
+                <button class="btn btn-secondary btn-3d-view" data-view="front" onclick="set3DViewPreset('front')" style="padding: 3px 10px; font-size: 11px;">Front View</button>
+                <button class="btn btn-secondary btn-3d-view" data-view="isometric" onclick="set3DViewPreset('isometric')" style="padding: 3px 10px; font-size: 11px;">Isometric</button>
+                <button class="btn btn-secondary btn-3d-view" data-view="top" onclick="set3DViewPreset('top')" style="padding: 3px 10px; font-size: 11px;">Aerial Top</button>
+            </div>
+
+            <!-- Lighting Themes -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Theme:</span>
+                <button class="btn btn-secondary btn-3d-theme active" data-theme="neon" onclick="set3DTheme('neon')" style="padding: 3px 8px; font-size: 11px;" title="Indigo Neon">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#6366f1; margin-right:4px;"></span> Neon
+                </button>
+                <button class="btn btn-secondary btn-3d-theme" data-theme="emerald" onclick="set3DTheme('emerald')" style="padding: 3px 8px; font-size: 11px;" title="Emerald Matrix">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; margin-right:4px;"></span> Matrix
+                </button>
+                <button class="btn btn-secondary btn-3d-theme" data-theme="sunset" onclick="set3DTheme('sunset')" style="padding: 3px 8px; font-size: 11px;" title="Amber Sunset">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b; margin-right:4px;"></span> Sunset
+                </button>
+                <button class="btn btn-secondary btn-3d-theme" data-theme="cyber" onclick="set3DTheme('cyber')" style="padding: 3px 8px; font-size: 11px;" title="Cyberpunk Violet">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ec4899; margin-right:4px;"></span> Cyber
                 </button>
             </div>
         </div>
         
-        <div style="position: relative; width: 100%; height: 320px; border-radius: var(--radius-md); overflow: hidden; background: radial-gradient(circle at center, rgba(20, 20, 20, 0.85) 0%, rgba(5, 5, 5, 0.98) 100%); border: 1px solid var(--border-subtle);">
+        <div style="position: relative; width: 100%; height: 350px; border-radius: var(--radius-md); overflow: hidden; background: radial-gradient(circle at center, rgba(16, 16, 24, 0.85) 0%, rgba(4, 4, 6, 0.98) 100%); border: 1px solid var(--border-subtle);">
             <!-- Corner HUD Overlays -->
-            <div style="position: absolute; top: 12px; left: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #38bdf8; pointer-events: none; background: rgba(12, 12, 12, 0.85); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="position: absolute; top: 12px; left: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #38bdf8; pointer-events: none; background: rgba(12, 12, 12, 0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
                 <i class="fa-solid fa-satellite-dish" style="margin-right: 6px;"></i> RIG: BILLBOARD-ALPHA-01 // TELEMETRY: SYNCED
             </div>
-            <div style="position: absolute; bottom: 12px; right: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #34d399; pointer-events: none; background: rgba(12, 12, 12, 0.85); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            
+            <div style="position: absolute; top: 12px; right: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #a5b4fc; pointer-events: none; background: rgba(12, 12, 12, 0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
+                <i class="fa-solid fa-location-crosshairs" style="margin-right: 6px;"></i> <span id="hud3DCoords">Rot: 14.3°, 20.1° • Dist: 7.2m • 60 FPS</span>
+            </div>
+
+            <div style="position: absolute; bottom: 12px; left: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #94a3b8; pointer-events: none; background: rgba(10, 10, 10, 0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <i class="fa-solid fa-hand-pointer" style="margin-right: 6px; color: #38bdf8;"></i> Left-Click & Drag 360° • Wheel Zoom • Click for Shockwave
+            </div>
+
+            <div style="position: absolute; bottom: 12px; right: 16px; z-index: 10; font-family: monospace; font-size: 11px; color: #34d399; pointer-events: none; background: rgba(12, 12, 12, 0.85); padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(52, 211, 153, 0.25);">
                 <i class="fa-solid fa-wave-square" style="margin-right: 6px;"></i> THREE.JS WEBGL ENGINE ACTIVE
             </div>
 

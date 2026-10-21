@@ -20,16 +20,80 @@ document.addEventListener("DOMContentLoaded", () => {
 function init3DExperience() {
     try {
         if (typeof window.Billboard3D !== "undefined" && document.getElementById("billboard3DContainer")) {
-            billboard3DInstance = new window.Billboard3D("billboard3DContainer");
+            billboard3DInstance = new window.Billboard3D("billboard3DContainer", {
+                initialTheme: "neon",
+                autoSpin: true,
+                onTelemetryUpdate: (telemetry) => {
+                    const coordsEl = document.getElementById("hud3DCoords");
+                    if (coordsEl) {
+                        coordsEl.textContent = `Rot: ${telemetry.rotX}°, ${telemetry.rotY}° • Dist: ${telemetry.distance}m • ${telemetry.fps} FPS`;
+                    }
+                }
+            });
         }
     } catch (e) {
         console.warn("3D Experience initialization skipped:", e);
     }
 }
 
+function set3DTheme(themeName) {
+    if (billboard3DInstance) {
+        billboard3DInstance.setTheme(themeName);
+        document.querySelectorAll(".btn-3d-theme").forEach(btn => {
+            btn.classList.toggle("active", btn.getAttribute("data-theme") === themeName);
+        });
+    }
+}
+
+function set3DViewPreset(preset) {
+    if (billboard3DInstance) {
+        billboard3DInstance.setViewPreset(preset);
+        document.querySelectorAll(".btn-3d-view").forEach(btn => {
+            btn.classList.toggle("active", btn.getAttribute("data-view") === preset);
+        });
+    }
+}
+
+function toggle3DAutoSpin() {
+    if (billboard3DInstance) {
+        const active = billboard3DInstance.toggleAutoSpin();
+        const btn = document.getElementById("btnAutoSpin");
+        if (btn) btn.classList.toggle("active", active);
+    }
+}
+
+function toggle3DWireframe() {
+    if (billboard3DInstance) {
+        const active = billboard3DInstance.toggleWireframe();
+        const btn = document.getElementById("btnWireframe");
+        if (btn) btn.classList.toggle("active", active);
+    }
+}
+
+function trigger3DPulse() {
+    if (billboard3DInstance) {
+        billboard3DInstance.triggerPulse();
+    }
+}
+
+function zoom3DIn() {
+    if (billboard3DInstance) {
+        billboard3DInstance.zoomIn();
+    }
+}
+
+function zoom3DOut() {
+    if (billboard3DInstance) {
+        billboard3DInstance.zoomOut();
+    }
+}
+
 function reset3DView() {
     if (billboard3DInstance) {
         billboard3DInstance.resetAngle();
+        document.querySelectorAll(".btn-3d-view").forEach(btn => {
+            btn.classList.toggle("active", btn.getAttribute("data-view") === "perspective");
+        });
     }
 }
 
