@@ -8,10 +8,13 @@ let deepShareChart = null;
 let sessionOffset = 0;
 const sessionLimit = 20;
 let totalSessionsCount = 0;
+let analyticsPollTimer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     initAnalyticsCharts();
     loadAnalyticsData();
+    // Auto-poll every 3 seconds for live reporting as viewers are detected
+    analyticsPollTimer = setInterval(loadAnalyticsData, 3000);
 });
 
 function changeAnalyticsPreset(preset) {
@@ -25,10 +28,25 @@ function changeAnalyticsPreset(preset) {
 
 async function loadAnalyticsData() {
     await Promise.all([
+        fetchOverviewKPIs(),
         fetchCampaignPerformance(),
         fetchAnalyticsCharts(),
         fetchHistoricalSessions()
     ]);
+}
+
+async function fetchOverviewKPIs() {
+    try {
+        const res = await fetch(`/api/analytics/overview?preset=${analyticsPreset}`);
+        const data = await res.json();
+
+        setText("analyticsTotalSessions", data.total_sessions || 0);
+        setText("analyticsCompletedSessions", data.completed_sessions || 0);
+        setText("analyticsTotalDuration", formatDuration(data.total_duration_seconds || 0));
+        setText("analyticsAvgDuration", `${(data.avg_duration_seconds || 0.0).toFixed(1)}s`);
+    } catch (e) {
+        console.error("Overview KPIs fetch error:", e);
+    }
 }
 
 async function fetchCampaignPerformance() {
@@ -42,8 +60,14 @@ async function fetchCampaignPerformance() {
         if (campaigns.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-dim); padding: 36px;">
-                        No campaign records found for this timeframe.
+                    <td colspan="9" style="text-align: center; color: var(--text-dim); padding: 48px 24px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa-solid fa-chart-simple" style="font-size: 32px; color: var(--text-dim); opacity: 0.5;"></i>
+                            <strong style="color: var(--text-muted); font-size: 14px;">No Verified Audience Viewing Detected Yet (Starts at Zero)</strong>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-dim); max-width: 440px;">
+                                Deep analysis reports are generated dynamically when the backend vision AI detects people in the Audience ROI Zone viewing an advertisement.
+                            </p>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -54,11 +78,18 @@ async function fetchCampaignPerformance() {
             const isVideo = c.media_type === "video";
             return `
                 <tr>
-                    <td><strong style="color: #fff;">${escapeHtml(c.name)}</strong></td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <strong style="color: #fff; font-size: 13px;">${escapeHtml(c.name)}</strong>
+                            <span style="font-size: 10px; color: #10b981; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-check-circle"></i> Verified AI Detection
+                            </span>
+                        </div>
+                    </td>
                     <td><span class="badge badge-info">${escapeHtml(c.category)}</span></td>
                     <td><span class="badge ${isVideo ? 'badge-warning' : 'badge-success'}">${isVideo ? 'Video' : 'Image'}</span></td>
                     <td><strong style="color: #6366f1;">${c.total_sessions}</strong></td>
-                    <td>${c.completed_sessions}</td>
+                    <td><strong style="color: #10b981;">${c.completed_sessions}</strong></td>
                     <td>${formatDuration(c.total_duration)}</td>
                     <td><strong>${c.avg_duration.toFixed(1)}s</strong></td>
                     <td>${c.max_duration.toFixed(1)}s</td>
@@ -99,7 +130,7 @@ async function fetchAnalyticsCharts() {
             const camps = adsData.campaigns || [];
             const active = camps.filter(c => c.total_sessions > 0);
             if (active.length === 0) {
-                deepShareChart.data.labels = ["No Data in Window"];
+                deepShareChart.data.labels = ["No Verified Viewers (0)"];
                 deepShareChart.data.datasets[0].data = [1];
                 deepShareChart.data.datasets[0].backgroundColor = ["#161616"];
             } else {
@@ -126,7 +157,14 @@ async function fetchHistoricalSessions() {
         if (!tbody) return;
 
         if (sessions.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-dim); padding: 36px;">No historical session logs recorded yet.</td></tr>`;
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 36px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="margin-right: 6px;"></i>
+                        No audience sessions recorded yet. System starts at zero until real viewers are detected.
+                    </td>
+                </tr>
+            `;
             updatePaginationUI();
             return;
         }
@@ -144,7 +182,7 @@ async function fetchHistoricalSessions() {
                     <td style="color: var(--text-muted); font-size: 12px;">${startStr}</td>
                     <td style="color: var(--text-muted); font-size: 12px;">${endStr}</td>
                     <td><strong>${s.estimated_duration.toFixed(1)}s</strong></td>
-                    <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                    <td><span class="badge ${badgeClass}"><i class="fa-solid fa-check"></i> ${s.status}</span></td>
                     <td style="color: var(--text-dim); font-size: 12px;">${s.exit_reason || "in_zone"}</td>
                 </tr>
             `;
@@ -197,20 +235,22 @@ function initAnalyticsCharts() {
                 datasets: [
                     {
                         type: "bar",
-                        label: "Viewer Sessions",
+                        label: "Verified Viewer Sessions",
                         data: [],
-                        backgroundColor: "rgba(99, 102, 241, 0.4)",
+                        backgroundColor: "rgba(99, 102, 241, 0.45)",
                         borderColor: "#6366f1",
-                        borderWidth: 1,
+                        borderWidth: 1.5,
+                        borderRadius: 4,
                         yAxisID: "y"
                     },
                     {
                         type: "line",
-                        label: "Avg Presence Duration (s)",
+                        label: "Avg Presence Dwell (s)",
                         data: [],
-                        borderColor: "#10b981",
-                        borderWidth: 2,
-                        tension: 0.35,
+                        borderColor: "#06b6d4",
+                        backgroundColor: "rgba(6, 182, 212, 0.1)",
+                        tension: 0.3,
+                        pointRadius: 4,
                         yAxisID: "y1"
                     }
                 ]
@@ -218,12 +258,21 @@ function initAnalyticsCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: "#94a3b8" } } },
                 scales: {
-                    x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#64748b" } },
-                    y: { position: "left", ticks: { color: "#64748b", stepSize: 1 }, grid: { color: "rgba(255, 255, 255, 0.05)" } },
-                    y1: { position: "right", grid: { drawOnChartArea: false }, ticks: { color: "#64748b" } }
-                }
+                    x: { grid: { color: "rgba(255,255,255,0.03)" }, ticks: { color: "#64748b" } },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(255,255,255,0.04)" },
+                        ticks: { color: "#64748b", stepSize: 1 }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: "right",
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: "#06b6d4" }
+                    }
+                },
+                plugins: { legend: { labels: { color: "#94a3b8" } } }
             }
         });
     }
@@ -233,7 +282,7 @@ function initAnalyticsCharts() {
         deepShareChart = new Chart(shareCanvas.getContext("2d"), {
             type: "doughnut",
             data: {
-                labels: [],
+                labels: ["No Verified Viewers (0)"],
                 datasets: [{
                     data: [1],
                     backgroundColor: ["#161616"],
@@ -249,6 +298,11 @@ function initAnalyticsCharts() {
             }
         });
     }
+}
+
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
 }
 
 function formatDuration(seconds) {
