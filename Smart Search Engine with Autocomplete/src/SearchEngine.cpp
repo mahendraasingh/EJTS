@@ -33,9 +33,10 @@ bool SearchEngine::initialize(const std::string& documentsJsonPath, const std::s
         return false;
     }
 
-    // Build Inverted Index and seed Autocomplete Trie
+    // Build Inverted Index, seed Autocomplete Trie & build Phrase Index
     invertedIndex.clear();
     autocompleteTrie.clear();
+    phraseIndex.clear();
 
     const auto& docs = documentManager.getAllDocuments();
     for (const auto& doc : docs) {
@@ -46,6 +47,9 @@ bool SearchEngine::initialize(const std::string& documentsJsonPath, const std::s
         for (const auto& kw : doc.getKeywords()) {
             autocompleteTrie.insert(kw, 15);
         }
+
+        // Deep phrase indexing (N-grams: unigrams, bigrams, trigrams, 4-grams)
+        phraseIndex.indexDocumentText(doc.getTitle(), doc.getDescription(), doc.getKeywords(), doc.getPopularity());
 
         // Build inverted index for title tokens
         auto titleTokens = tokenize(doc.getTitle());
@@ -74,6 +78,11 @@ bool SearchEngine::initialize(const std::string& documentsJsonPath, const std::s
         pair.second.erase(std::unique(pair.second.begin(), pair.second.end()), pair.second.end());
     }
 
+    // Index previous search history phrases
+    for (const auto& h : historyManager.getRecentSearches(20)) {
+        phraseIndex.addPhrase(h, 40);
+    }
+
     return true;
 }
 
@@ -83,11 +92,12 @@ std::vector<std::string> SearchEngine::tokenize(const std::string& text) const {
 
     for (char ch : text) {
         unsigned char uc = static_cast<unsigned char>(ch);
-        if (std::isalnum(uc)) {
+        // Allow alphanumeric plus '+' for C++
+        if (std::isalnum(uc) || ch == '+') {
             current += static_cast<char>(std::tolower(uc));
         } else {
             if (!current.empty()) {
-                if (current.length() >= 2) { // Skip 1-letter noise tokens
+                if (current.length() >= 2 || current == "c" || current == "r") {
                     tokens.push_back(current);
                 }
                 current.clear();
@@ -95,7 +105,7 @@ std::vector<std::string> SearchEngine::tokenize(const std::string& text) const {
         }
     }
 
-    if (!current.empty() && current.length() >= 2) {
+    if (!current.empty()) {
         tokens.push_back(current);
     }
 
@@ -105,7 +115,6 @@ std::vector<std::string> SearchEngine::tokenize(const std::string& text) const {
 std::string SearchEngine::highlightTerms(const std::string& sourceText, const std::vector<std::string>& tokens) const {
     if (tokens.empty() || sourceText.empty()) return sourceText;
 
-    // Build a case-insensitive search and wrap in <mark> tags
     std::string lowerSource = Trie::normalize(sourceText);
     std::vector<bool> isHighlighted(sourceText.size(), false);
 
@@ -152,48 +161,90 @@ double SearchEngine::calculateScore(const Document& doc, const std::string& rawQ
     std::string lowerDesc = Trie::normalize(doc.getDescription());
     std::string cleanQuery = Trie::normalize(rawQuery);
 
-    // 1. Exact Title Match (+50 points)
-    if (!cleanQuery.empty() && lowerTitle == cleanQuery) {
-        score += 50.0;
-    } else if (!cleanQuery.empty() && lowerTitle.find(cleanQuery) != std::string::npos) {
-        score += 35.0; // Substring match of full query in title
+    if (cleanQuery.empty() || queryTokens.empty()) return 0.0;
+
+    // 1. Exact Complete Phrase Matching (Google-like Title & Body Match)
+    if (lowerTitle == cleanQuery) {
+        score += 140.0; // Perfect full title match!
+    } else if (lowerTitle.find(cleanQuery) != std::string::npos) {
+        score += 85.0;  // Exact phrase contained inside title
     }
 
-    // 2. Query token matches
-    for (const auto& token : queryTokens) {
-        // In Title (+20 per occurrence)
-        size_t pos = 0;
-        int titleCount = 0;
-        while ((pos = lowerTitle.find(token, pos)) != std::string::npos) {
-            titleCount++;
-            pos += token.length();
-        }
-        score += titleCount * 20.0;
+    if (lowerDesc.find(cleanQuery) != std::string::npos) {
+        score += 45.0;  // Exact phrase contained inside description
+    }
 
-        // In Keywords (+15 per matched keyword)
+    // 2. Query Term Coverage (How many of the user's words appear in the document)
+    int matchedTokensCount = 0;
+    for (const auto& token : queryTokens) {
+        bool inTitle = (lowerTitle.find(token) != std::string::npos);
+        bool inDesc = (lowerDesc.find(token) != std::string::npos);
+        bool inKeywords = false;
+
         for (const auto& kw : doc.getKeywords()) {
             std::string lowerKw = Trie::normalize(kw);
             if (lowerKw == token || lowerKw.find(token) != std::string::npos) {
-                score += 15.0;
+                inKeywords = true;
                 if (std::find(outMatchedKeywords.begin(), outMatchedKeywords.end(), kw) == outMatchedKeywords.end()) {
                     outMatchedKeywords.push_back(kw);
                 }
             }
         }
 
-        // In Description (+5 per occurrence)
-        pos = 0;
-        int descCount = 0;
-        while ((pos = lowerDesc.find(token, pos)) != std::string::npos) {
-            descCount++;
-            pos += token.length();
+        if (inTitle || inDesc || inKeywords) {
+            matchedTokensCount++;
         }
-        score += descCount * 5.0;
+
+        // Weighted term counts
+        if (inTitle) {
+            size_t pos = 0;
+            int count = 0;
+            while ((pos = lowerTitle.find(token, pos)) != std::string::npos) {
+                count++;
+                pos += token.length();
+            }
+            score += count * 25.0;
+        }
+
+        if (inKeywords) {
+            score += 18.0;
+        }
+
+        if (inDesc) {
+            size_t pos = 0;
+            int count = 0;
+            while ((pos = lowerDesc.find(token, pos)) != std::string::npos) {
+                count++;
+                pos += token.length();
+            }
+            score += count * 6.0;
+        }
     }
 
-    // 3. Baseline popularity bonus (+0.2 * doc popularity)
+    // Coverage Multiplier: Prioritize documents that cover all or most query terms
+    double coverageRatio = static_cast<double>(matchedTokensCount) / queryTokens.size();
+    score += (coverageRatio * 50.0);
+
+    // Full coverage jackpot (all words of query present in document)
+    if (coverageRatio >= 0.99) {
+        score += 35.0;
+    }
+
+    // 3. Phrase Proximity (if consecutive query tokens appear close together in description)
+    if (queryTokens.size() >= 2) {
+        size_t pos1 = lowerDesc.find(queryTokens[0]);
+        size_t pos2 = lowerDesc.find(queryTokens[1]);
+        if (pos1 != std::string::npos && pos2 != std::string::npos) {
+            size_t diff = (pos1 > pos2) ? (pos1 - pos2) : (pos2 - pos1);
+            if (diff < 60) {
+                score += 20.0; // Near each other in text!
+            }
+        }
+    }
+
+    // 4. Baseline Document Popularity Bonus
     if (score > 0.0) {
-        score += (doc.getPopularity() * 0.2);
+        score += (doc.getPopularity() * 0.25);
     }
 
     return score;
@@ -207,9 +258,10 @@ std::vector<SearchResult> SearchEngine::search(const std::string& query, int max
         return results;
     }
 
-    // 1. Record search query in history and update Trie frequency
+    // 1. Record search query in history, Trie, and PhraseIndex
     historyManager.recordSearch(cleanQuery);
     autocompleteTrie.incrementFrequency(cleanQuery, 2);
+    phraseIndex.addPhrase(cleanQuery, 35); // Engine learns from user queries!
 
     // 2. Tokenize query
     auto queryTokens = tokenize(cleanQuery);
@@ -228,7 +280,7 @@ std::vector<SearchResult> SearchEngine::search(const std::string& query, int max
         }
     }
 
-    // If inverted index had no exact token hits, fallback to checking all documents
+    // If inverted index had no exact hits, check all documents
     if (candidateDocIds.empty()) {
         for (const auto& doc : documentManager.getAllDocuments()) {
             candidateDocIds.insert(doc.getId());
@@ -262,7 +314,7 @@ std::vector<SearchResult> SearchEngine::search(const std::string& query, int max
         }
     }
 
-    // 5. Extract from min-heap into vector (gives ascending order, so reverse to descending)
+    // 5. Extract from min-heap into vector (gives ascending order, reverse to descending)
     while (!minHeap.empty()) {
         results.push_back(minHeap.top());
         minHeap.pop();
@@ -272,8 +324,65 @@ std::vector<SearchResult> SearchEngine::search(const std::string& query, int max
     return results;
 }
 
-std::vector<std::string> SearchEngine::getSuggestions(const std::string& prefix, int maxSuggestions) {
-    return autocompleteTrie.getSuggestions(prefix, maxSuggestions);
+std::vector<QuerySuggestion> SearchEngine::getSuggestionsDetailed(const std::string& query, int maxSuggestions) {
+    std::vector<QuerySuggestion> suggestions;
+    std::string cleanQuery = Trie::normalize(query);
+    if (cleanQuery.empty()) return suggestions;
+
+    std::unordered_set<std::string> seen;
+    auto queryWords = tokenize(cleanQuery);
+
+    // 1. Check History for matching past searches
+    for (const auto& h : historyManager.getRecentSearches(10)) {
+        if (h.rfind(cleanQuery, 0) == 0 && h != cleanQuery) {
+            if (seen.find(h) == seen.end()) {
+                seen.insert(h);
+                suggestions.push_back({h, "history", 160.0});
+            }
+        }
+    }
+
+    // 2. Trie single-word completions (Keywords and Titles starting with prefix)
+    if (queryWords.size() <= 1) {
+        auto trieMatches = autocompleteTrie.getSuggestions(cleanQuery, maxSuggestions);
+        for (size_t i = 0; i < trieMatches.size(); ++i) {
+            const auto& tm = trieMatches[i];
+            if (seen.find(tm) == seen.end() && tm != cleanQuery) {
+                seen.insert(tm);
+                suggestions.push_back({tm, "word_completion", 170.0 - (i * 2.0)});
+            }
+        }
+    }
+
+    // 3. Query Context-Aware Phrase & N-Gram Index (retrieve generous candidate pool)
+    auto phraseSuggestions = phraseIndex.getContextSuggestions(cleanQuery, maxSuggestions * 2);
+    for (const auto& ps : phraseSuggestions) {
+        if (seen.find(ps.text) == seen.end() && ps.text != cleanQuery) {
+            seen.insert(ps.text);
+            suggestions.push_back(ps);
+        }
+    }
+
+    // Sort by score descending, tie-breaking on shorter length
+    std::sort(suggestions.begin(), suggestions.end(), [](const auto& a, const auto& b) {
+        if (std::abs(a.score - b.score) > 0.01) return a.score > b.score;
+        return a.text.length() < b.text.length();
+    });
+
+    if (suggestions.size() > static_cast<size_t>(maxSuggestions)) {
+        suggestions.resize(maxSuggestions);
+    }
+
+    return suggestions;
+}
+
+std::vector<std::string> SearchEngine::getSuggestions(const std::string& query, int maxSuggestions) {
+    auto detailed = getSuggestionsDetailed(query, maxSuggestions);
+    std::vector<std::string> results;
+    for (const auto& item : detailed) {
+        results.push_back(item.text);
+    }
+    return results;
 }
 
 std::vector<std::string> SearchEngine::getRecentSearches(int limit) const {
@@ -290,6 +399,10 @@ void SearchEngine::clearHistory() {
 
 const DocumentManager& SearchEngine::getDocumentManager() const {
     return documentManager;
+}
+
+const PhraseIndex& SearchEngine::getPhraseIndex() const {
+    return phraseIndex;
 }
 
 const HistoryManager& SearchEngine::getHistoryManager() const {

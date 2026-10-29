@@ -36,10 +36,11 @@ private:
     std::unordered_map<std::string, std::vector<size_t>> tokenToPhraseMap;
 
     // Helper utilities
-    std::vector<std::string> splitWords(const std::string& text) const;
     void extractNgramsFromText(const std::string& text, int baseWeight);
 
 public:
+    static std::vector<std::string> splitWords(const std::string& text);
+    static bool isDanglingFragment(const std::string& phrase, const std::string& query);
     PhraseIndex();
 
     /**

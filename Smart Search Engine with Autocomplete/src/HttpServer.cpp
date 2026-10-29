@@ -108,12 +108,12 @@ std::string HttpServer::routeRequest(const std::string& method, const std::strin
     // 2. API Endpoints
     if (path == "/api/suggest" && method == "GET") {
         std::string query = getQueryParam(queryString, "q");
-        auto suggestions = searchEngine.getSuggestions(query, 8);
+        auto suggestions = searchEngine.getSuggestionsDetailed(query, 8);
 
         std::ostringstream json;
         json << "[";
         for (size_t i = 0; i < suggestions.size(); ++i) {
-            json << "\"" << suggestions[i] << "\"";
+            json << suggestions[i].toJson();
             if (i + 1 < suggestions.size()) json << ",";
         }
         json << "]";

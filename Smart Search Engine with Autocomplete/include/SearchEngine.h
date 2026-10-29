@@ -4,6 +4,7 @@
 #include "Document.h"
 #include "DocumentManager.h"
 #include "Trie.h"
+#include "PhraseIndex.h"
 #include "HistoryManager.h"
 #include <string>
 #include <vector>
@@ -32,12 +33,14 @@ struct SearchResultComparator {
 };
 
 /**
- * @brief Core Search Engine coordinating Indexing, Autocomplete, Ranking, and History.
+ * @brief Google-Inspired Search Engine coordinating Indexing, Trie & Phrase Autocomplete,
+ * Multi-Factor Full-Query Ranking, and History.
  */
 class SearchEngine {
 private:
     DocumentManager documentManager;
     Trie autocompleteTrie;
+    PhraseIndex phraseIndex;
     HistoryManager historyManager;
 
     // Inverted Index: maps normalized word token -> list of Document IDs
@@ -54,20 +57,25 @@ public:
 
     /**
      * @brief Initializes the engine: loads documents, builds inverted index,
-     * and seeds the autocomplete Trie with keywords and titles.
+     * seeds the autocomplete Trie, and extracts N-grams into the PhraseIndex.
      */
     bool initialize(const std::string& documentsJsonPath = "data/documents.json",
                     const std::string& historyPath = "data/history.txt");
 
     /**
-     * @brief Searches documents matching the query and ranks them by relevance.
+     * @brief Searches documents matching the full query and ranks them by relevance.
      */
     std::vector<SearchResult> search(const std::string& query, int maxResults = 10);
 
     /**
-     * @brief Fetches real-time prefix suggestions from the Trie.
+     * @brief Context-aware autocomplete returning rich suggestion objects.
      */
-    std::vector<std::string> getSuggestions(const std::string& prefix, int maxSuggestions = 5);
+    std::vector<QuerySuggestion> getSuggestionsDetailed(const std::string& query, int maxSuggestions = 8);
+
+    /**
+     * @brief Context-aware autocomplete returning string list (convenience wrapper).
+     */
+    std::vector<std::string> getSuggestions(const std::string& query, int maxSuggestions = 8);
 
     /**
      * @brief Returns recent search queries.
@@ -88,6 +96,7 @@ public:
      * @brief Accessors for inner components
      */
     const DocumentManager& getDocumentManager() const;
+    const PhraseIndex& getPhraseIndex() const;
     const HistoryManager& getHistoryManager() const;
 };
 

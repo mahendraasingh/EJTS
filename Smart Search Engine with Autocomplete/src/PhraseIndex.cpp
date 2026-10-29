@@ -33,7 +33,7 @@ size_t PhraseIndex::getPhraseCount() const {
     return indexedPhrases.size();
 }
 
-std::vector<std::string> PhraseIndex::splitWords(const std::string& text) const {
+std::vector<std::string> PhraseIndex::splitWords(const std::string& text) {
     std::vector<std::string> words;
     std::string current = "";
 
@@ -106,28 +106,40 @@ void PhraseIndex::extractNgramsFromText(const std::string& text, int baseWeight)
     }
 }
 
+bool PhraseIndex::isDanglingFragment(const std::string& phrase, const std::string& query) {
+    static const std::unordered_set<std::string> prepositions = {
+        "in", "for", "with", "using", "of", "to", "by", "at", "and", "or", "a", "an", "the", "as"
+    };
+    auto words = PhraseIndex::splitWords(phrase);
+    if (words.empty()) return false;
+    const std::string& lastWord = words.back();
+    if (prepositions.find(lastWord) != prepositions.end()) {
+        auto queryWords = PhraseIndex::splitWords(query);
+        if (queryWords.empty() || queryWords.back() != lastWord) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void PhraseIndex::indexDocumentText(const std::string& title, const std::string& description,
                                      const std::vector<std::string>& keywords, int popularity) {
-    int weight = 20 + (popularity / 5);
+    int weight = 30 + (popularity / 3);
 
     // 1. Index full title
-    addPhrase(title, weight + 30);
+    addPhrase(title, weight + 40);
 
-    // 2. Extract N-grams from title
-    extractNgramsFromText(title, weight + 15);
+    // 2. Extract meaningful N-grams from title
+    extractNgramsFromText(title, weight + 20);
 
     // 3. Index keywords and keyword combinations
     for (const auto& kw : keywords) {
-        addPhrase(kw, weight + 10);
-        // Also combine keyword with title context
+        addPhrase(kw, weight + 25);
         auto kwWords = splitWords(kw);
         if (kwWords.size() > 1) {
-            extractNgramsFromText(kw, weight + 8);
+            extractNgramsFromText(kw, weight + 15);
         }
     }
-
-    // 4. Extract rich phrases from description sentences
-    extractNgramsFromText(description, weight);
 }
 
 std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::string& query, int maxSuggestions) const {
@@ -149,9 +161,11 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
             if (idx >= indexedPhrases.size()) continue;
             const auto& item = indexedPhrases[idx];
             if (seenPhrases.find(item.first) == seenPhrases.end()) {
+                if (isDanglingFragment(item.first, cleanQuery)) continue;
                 seenPhrases.insert(item.first);
 
-                double score = 100.0 + item.second;
+                double weightBonus = std::log1p(static_cast<double>(std::max(0, item.second))) * 6.0;
+                double score = 160.0 + weightBonus;
                 if (item.first == cleanQuery) score += 5.0; // exact complete match
 
                 candidates.push_back({
@@ -163,41 +177,63 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
         }
     }
 
-    // Channel 2: Scan for phrases that start with or contain cleanQuery as a substring
+    // Channel 2: Phrase prefix match across all indexed phrases
+    // If the phrase begins with cleanQuery (e.g. "machine learning..." begins with "machine")
     for (const auto& item : indexedPhrases) {
         if (seenPhrases.find(item.first) != seenPhrases.end()) continue;
+        if (isDanglingFragment(item.first, cleanQuery)) continue;
 
         if (item.first.rfind(cleanQuery, 0) == 0) { // starts with cleanQuery
             seenPhrases.insert(item.first);
+            double weightBonus = std::log1p(static_cast<double>(std::max(0, item.second))) * 6.0;
             candidates.push_back({
                 item.first,
                 "phrase_continuation",
-                90.0 + item.second
-            });
-        } else if (item.first.find(cleanQuery) != std::string::npos) { // contains as substring
-            seenPhrases.insert(item.first);
-            candidates.push_back({
-                item.first,
-                "context_match",
-                70.0 + item.second
+                150.0 + weightBonus
             });
         }
     }
 
-    // Channel 3: Context-Aware Multi-Word Token Fallback
-    // If user typed multiple words and we need more suggestions, find phrases that contain
-    // the preceding context words while matching the latest word!
-    if (queryWords.size() > 1 && candidates.size() < static_cast<size_t>(maxSuggestions * 2)) {
+    // Channel 3: Word-boundary prefix match for non-initial words
+    // E.g., user typed "c++" or "pro", find phrases where a word inside starts with cleanQuery
+    for (const auto& item : indexedPhrases) {
+        if (seenPhrases.find(item.first) != seenPhrases.end()) continue;
+        if (isDanglingFragment(item.first, cleanQuery)) continue;
+
+        auto itemWords = splitWords(item.first);
+        bool wordPrefixMatch = false;
+        for (const auto& iw : itemWords) {
+            if (iw.rfind(cleanQuery, 0) == 0) {
+                wordPrefixMatch = true;
+                break;
+            }
+        }
+
+        if (wordPrefixMatch) {
+            seenPhrases.insert(item.first);
+            double weightBonus = std::log1p(static_cast<double>(std::max(0, item.second))) * 4.0;
+            candidates.push_back({
+                item.first,
+                "context_match",
+                45.0 + weightBonus
+            });
+        }
+    }
+
+    // Channel 4: Context-Aware Multi-Word Token Fallback
+    // If user typed multiple words (e.g. "machine learning using c++", "c++ data structures for beginners")
+    // Match phrases containing the context words and matching the latest word
+    if (queryWords.size() > 1) {
         std::string latestWord = queryWords.back();
         std::vector<std::string> contextWords(queryWords.begin(), queryWords.end() - 1);
 
         for (const auto& item : indexedPhrases) {
             if (seenPhrases.find(item.first) != seenPhrases.end()) continue;
+            if (isDanglingFragment(item.first, cleanQuery)) continue;
 
             auto itemWords = splitWords(item.first);
             std::unordered_set<std::string> itemWordSet(itemWords.begin(), itemWords.end());
 
-            // Check how many context words are present
             int matchedContextCount = 0;
             for (const auto& cw : contextWords) {
                 if (itemWordSet.find(cw) != itemWordSet.end()) {
@@ -205,7 +241,6 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
                 }
             }
 
-            // Check if latest word is matched (as prefix or full word)
             bool latestWordMatched = false;
             for (const auto& iw : itemWords) {
                 if (iw.rfind(latestWord, 0) == 0) {
@@ -217,7 +252,8 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
             if (matchedContextCount > 0 && latestWordMatched) {
                 seenPhrases.insert(item.first);
                 double matchRatio = static_cast<double>(matchedContextCount + 1) / queryWords.size();
-                double score = 50.0 + (matchRatio * 35.0) + (item.second * 0.2);
+                double weightBonus = std::log1p(static_cast<double>(std::max(0, item.second))) * 5.0;
+                double score = 90.0 + (matchRatio * 55.0) + weightBonus;
 
                 candidates.push_back({
                     item.first,
@@ -228,10 +264,12 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
         }
     }
 
-    // Channel 4: General Token Overlap Fallback (when query is not in index)
-    if (candidates.size() < static_cast<size_t>(maxSuggestions)) {
+    // Channel 5: Multi-word general token overlap fallback
+    // When the complete phrase does not exist verbatim, rank by token overlap
+    if (candidates.size() < static_cast<size_t>(maxSuggestions * 2)) {
         for (const auto& item : indexedPhrases) {
             if (seenPhrases.find(item.first) != seenPhrases.end()) continue;
+            if (isDanglingFragment(item.first, cleanQuery)) continue;
 
             auto itemWords = splitWords(item.first);
             std::unordered_set<std::string> itemWordSet(itemWords.begin(), itemWords.end());
@@ -245,7 +283,9 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
 
             if (matchCount >= 2 || (matchCount >= 1 && queryWords.size() == 1)) {
                 seenPhrases.insert(item.first);
-                double score = 30.0 + (matchCount * 15.0) + (item.second * 0.1);
+                double overlapRatio = static_cast<double>(matchCount) / queryWords.size();
+                double weightBonus = std::log1p(static_cast<double>(std::max(0, item.second))) * 3.0;
+                double score = 30.0 + (overlapRatio * 35.0) + weightBonus;
                 candidates.push_back({
                     item.first,
                     "context_match",
@@ -255,12 +295,12 @@ std::vector<QuerySuggestion> PhraseIndex::getContextSuggestions(const std::strin
         }
     }
 
-    // Sort candidates by score descending
+    // Sort candidates by score descending, tie-breaking on shorter phrase length
     std::sort(candidates.begin(), candidates.end(), [](const auto& a, const auto& b) {
-        if (a.score != b.score) {
+        if (std::abs(a.score - b.score) > 0.01) {
             return a.score > b.score;
         }
-        return a.text.length() < b.text.length(); // Prefer concise completions when tied
+        return a.text.length() < b.text.length();
     });
 
     // Extract top maxSuggestions
