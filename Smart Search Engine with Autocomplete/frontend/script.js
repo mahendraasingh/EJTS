@@ -112,36 +112,12 @@ function renderSuggestions(suggestions, prefix) {
     return;
   }
 
-  // Header hint in dropdown
-  const hintItem = document.createElement('li');
-  hintItem.className = 'dropdown-header-hint';
-  hintItem.innerHTML = `<span>// Context-Aware Autocomplete [${suggestions.length} suggestions]</span><span>ESC to exit</span>`;
-  suggestionsDropdown.appendChild(hintItem);
-
   suggestions.forEach((rawItem, index) => {
     const li = document.createElement('li');
     li.className = 'suggestion-item';
     li.setAttribute('role', 'option');
 
     const itemText = (typeof rawItem === 'object' && rawItem !== null) ? rawItem.text : String(rawItem);
-    const itemType = (typeof rawItem === 'object' && rawItem !== null) ? (rawItem.type || 'phrase') : 'phrase';
-
-    // Badge styling mapping
-    let badgeClass = 'badge-phrase';
-    let badgeLabel = 'Phrase';
-    if (itemType === 'history') {
-      badgeClass = 'badge-history';
-      badgeLabel = 'History';
-    } else if (itemType === 'exact_phrase') {
-      badgeClass = 'badge-exact';
-      badgeLabel = 'Exact';
-    } else if (itemType === 'context_match') {
-      badgeClass = 'badge-context';
-      badgeLabel = 'Context';
-    } else if (itemType === 'word_completion') {
-      badgeClass = 'badge-trie';
-      badgeLabel = 'Trie';
-    }
 
     // Highlight matching prefix part in suggestion
     let highlightedText = escapeHtml(itemText);
@@ -150,18 +126,23 @@ function renderSuggestions(suggestions, prefix) {
     if (lowerItem.startsWith(lowerPrefix)) {
       const matchPart = itemText.substring(0, prefix.length);
       const restPart = itemText.substring(prefix.length);
-      highlightedText = `<span class="suggestion-prefix">${escapeHtml(matchPart)}</span>${escapeHtml(restPart)}`;
+      highlightedText = `<span class="suggestion-prefix">${escapeHtml(matchPart)}</span><strong>${escapeHtml(restPart)}</strong>`;
     }
 
     li.innerHTML = `
-      <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
-        <span style="color:var(--syn-function); font-family:var(--font-mono);">&gt;</span>
-        <span class="suggestion-text" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${highlightedText}</span>
+      <div class="suggestion-left">
+        <svg class="suggestion-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span class="suggestion-text">${highlightedText}</span>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <span class="suggestion-badge ${badgeClass}">${badgeLabel}</span>
-        <button class="refine-btn" title="Refine query in search box" aria-label="Refine query">&#8598;</button>
-      </div>
+      <button class="refine-btn" title="Fill search box" aria-label="Fill search box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="7" y1="17" x2="17" y2="7"></line>
+          <polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </button>
     `;
 
     li.addEventListener('mousedown', (e) => {
@@ -446,55 +427,49 @@ function renderCards(resultsList) {
     const scorePercent = Math.min(100, Math.max(10, Math.round((item.score / maxScore) * 100)));
 
     // Render keyword pills
+    // Render keyword pills
     const kwHtml = (doc.keywords || []).map(kw => {
-      return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">#${escapeHtml(kw)}</button>`;
+      return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">${escapeHtml(kw)}</button>`;
     }).join('');
 
-    const docUrl = doc.url || `https://docs.smartsearch.internal/ref/doc_${doc.id}`;
-    let displayUrl = docUrl;
+    const docUrl = doc.url || `https://docs.smartsearch.org/article/${doc.id}`;
+    let displayDomain = 'smartsearch.org';
+    let displayBreadcrumb = doc.category || 'Article';
     try {
       const parsed = new URL(docUrl);
-      displayUrl = `${parsed.hostname} › ${parsed.pathname.split('/').filter(Boolean).slice(0, 2).join(' › ')}`;
+      displayDomain = parsed.hostname;
+      const pathParts = parsed.pathname.split('/').filter(Boolean);
+      displayBreadcrumb = pathParts.length > 0 ? `${parsed.hostname} › ${pathParts.join(' › ')}` : parsed.hostname;
     } catch (_) {
-      displayUrl = docUrl;
+      displayBreadcrumb = docUrl;
     }
 
     card.innerHTML = `
-      <div class="card-terminal-bar">
-        <div class="terminal-dots">
-          <span class="t-dot t-dot-red"></span>
-          <span class="t-dot t-dot-yellow"></span>
-          <span class="t-dot t-dot-green"></span>
+      <div class="result-site-row">
+        <div class="result-site-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
         </div>
-        <span>document_${doc.id}.cpp</span>
-        <span>rank: #${index + 1}</span>
+        <div class="result-site-meta">
+          <span class="result-site-name">${escapeHtml(displayDomain)}</span>
+          <span class="result-site-url">${escapeHtml(displayBreadcrumb)}</span>
+        </div>
+        <span class="category-pill">${escapeHtml(doc.category || 'General')}</span>
       </div>
-      <div class="card-content-body">
-        <div class="card-url-breadcrumb">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-          <a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayUrl)}</a>
-          <span class="category-pill">${escapeHtml(doc.category || 'Computer Science')}</span>
-        </div>
-        <div class="card-top">
-          <a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer" class="card-title-link">
-            <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
-            <svg class="ext-link-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          </a>
-          <div class="score-badge-wrap">
-            <span class="score-pill">${scoreFormatted} pts</span>
-            <div class="score-bar-track" title="Relevance: ${scorePercent}%">
-              <div class="score-bar-fill" style="width: ${scorePercent}%"></div>
-            </div>
-          </div>
-        </div>
-        <p class="card-desc">${item.highlightedDescription || escapeHtml(doc.description)}</p>
-        <div class="card-footer">
-          <div class="card-keywords">${kwHtml}</div>
-          <div class="card-meta">
-            <span>id: 0x${doc.id.toString(16).padStart(2, '0')}</span>
-            <span>&bull;</span>
-            <span>popularity: ${doc.popularity}%</span>
-          </div>
+
+      <h3 class="result-title">
+        <a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer">${item.highlightedTitle || escapeHtml(doc.title)}</a>
+      </h3>
+
+      <p class="result-snippet">${item.highlightedDescription || escapeHtml(doc.description)}</p>
+
+      <div class="result-footer-row">
+        <div class="result-keywords">${kwHtml}</div>
+        <div class="result-meta-badge">
+          <span class="match-badge">${scorePercent}% match</span>
         </div>
       </div>
     `;
@@ -526,14 +501,14 @@ async function loadPopular() {
 
     popularTagsContainer.innerHTML = '';
     if (!popular || popular.length === 0) {
-      popularTagsContainer.innerHTML = '<span class="empty-hint">// no popular queries yet</span>';
+      popularTagsContainer.innerHTML = '<span class="empty-hint">No trending searches yet</span>';
       return;
     }
 
     popular.forEach(item => {
       const chip = document.createElement('button');
       chip.className = 'tag-chip';
-      chip.innerHTML = `<span>${escapeHtml(item.query)}</span><span class="tag-count">${item.count}</span>`;
+      chip.innerHTML = `<span>${escapeHtml(item.query)}</span>`;
       chip.addEventListener('click', () => {
         searchInput.value = item.query;
         clearInputBtn.style.display = 'block';
@@ -554,7 +529,7 @@ async function loadHistory() {
 
     historyTagsContainer.innerHTML = '';
     if (!history || history.length === 0) {
-      historyTagsContainer.innerHTML = '<span class="empty-hint">// no recent searches</span>';
+      historyTagsContainer.innerHTML = '<span class="empty-hint">No recent searches</span>';
       return;
     }
 

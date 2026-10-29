@@ -1,116 +1,119 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Search Engine with Autocomplete | C++17 DSA Capstone</title>
-  <meta name="description" content="Developer-grade C++ Search Engine with Trie-based prefix autocomplete, inverted indexing, and multi-factor relevance ranking.">
+  <title>SmartSearch — Real-Time Search Engine</title>
+  <meta name="description" content="Clean, real-time search engine with instant autocomplete and relevance ranking powered by C++17.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient background glow elements -->
-  <div class="ambient-glow glow-top"></div>
-  <div class="ambient-glow glow-bottom"></div>
-
-  <!-- Minimal Floating Theme Toggle (Top Right) -->
-  <div class="top-nav-bar">
-    <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
-      <!-- Moon Icon (for dark mode) -->
-      <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
-      <!-- Sun Icon (for light mode) -->
-      <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-    </button>
-  </div>
+  <!-- Top Navigation Bar -->
+  <header class="top-nav-bar">
+    <div class="nav-left">
+      <span class="nav-app-name">SmartSearch</span>
+    </div>
+    <div class="nav-right">
+      <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
+        <!-- Moon Icon (for dark mode) -->
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <!-- Sun Icon (for light mode) -->
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
 
   <main class="main-content container">
-    <!-- Hero Section with Centered Google-Like Search -->
+    <!-- Hero Section with Google/Safari Style Search -->
     <section class="hero-section">
       <div class="brand-center">
-        <div class="brand-logo-icon">&gt;_</div>
-        <h1 class="brand-logo-title">Smart<span class="gradient-text">Search</span></h1>
+        <h1 class="brand-logo-title">
+          <span class="logo-b">S</span><span class="logo-r">m</span><span class="logo-y">a</span><span class="logo-b">r</span><span class="logo-g">t</span><span class="logo-r">S</span><span class="logo-b">earch</span>
+        </h1>
       </div>
-      <p class="brand-tagline">Real-Time Context-Aware Search &bull; C++17 Information Retrieval Engine</p>
+      <p class="brand-tagline">Real-time instant search across computing &amp; algorithms</p>
 
+      <!-- Google Chrome / Safari Style Omnibox Search Bar -->
       <div class="search-wrapper">
         <div class="search-box">
-          <span class="terminal-prompt-char">&gt;_</span>
+          <!-- Magnifying glass icon -->
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+
           <input 
             type="text" 
             id="searchInput" 
-            placeholder="Type to search in real time (e.g. machine learning, c++ data structures)..." 
+            placeholder="Search articles, topics, or keywords..." 
             autocomplete="off" 
             spellcheck="false"
             aria-label="Search query"
           >
-          <span class="kbd-shortcut" title="Press / or Ctrl+K to focus search bar">Ctrl K</span>
-          <button id="clearInputBtn" class="clear-btn" aria-label="Clear input" style="display: none;">&times;</button>
-          <button id="searchBtn" class="primary-btn">
-            <span>Search</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
+
+          <button id="clearInputBtn" class="clear-btn" aria-label="Clear search" style="display: none;" title="Clear">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
+          </button>
+
+          <button id="searchBtn" class="search-submit-btn" aria-label="Submit search">
+            Search
           </button>
         </div>
 
-        <!-- Trie Autocomplete Dropdown -->
+        <!-- Google/Safari Clean Autocomplete Dropdown -->
         <ul id="suggestionsDropdown" class="autocomplete-dropdown" style="display: none;" role="listbox">
-          <!-- Populated dynamically by Trie -->
+          <!-- Populated dynamically -->
         </ul>
       </div>
 
-      <!-- Quick Exploration Pills: Popular & History -->
+      <!-- Quick Exploration Pills: Trending & Recent -->
       <div class="quick-access-panel">
         <div class="quick-row">
-          <div class="quick-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            Popular:
-          </div>
+          <span class="quick-label">Trending:</span>
           <div id="popularTags" class="tag-list">
-            <span class="tag-skeleton">// loading popular queries...</span>
+            <span class="tag-skeleton">Loading trending topics...</span>
           </div>
         </div>
 
         <div class="quick-row">
-          <div class="quick-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            History:
-          </div>
+          <span class="quick-label">Recent:</span>
           <div id="historyTags" class="tag-list">
-            <span class="empty-hint">// no recent searches recorded</span>
+            <span class="empty-hint">No recent searches</span>
           </div>
-          <button id="clearHistoryBtn" class="text-btn" title="Clear Search History">[clear_history()]</button>
+          <button id="clearHistoryBtn" class="text-link-btn" title="Clear your search history">Clear history</button>
         </div>
       </div>
 
       <!-- Filter / Sort Toolbar -->
       <div class="filter-toolbar">
         <div class="filter-group">
-          <span class="filter-label">std::sort_by:</span>
+          <span class="filter-label">Sort by:</span>
           <select id="sortSelect" class="filter-select">
-            <option value="relevance" selected>Score (Relevance Highest First)</option>
-            <option value="popularity">Popularity (doc.popularity)</option>
-            <option value="id">ID (doc.id)</option>
+            <option value="relevance" selected>Most relevant</option>
+            <option value="popularity">Popularity</option>
+            <option value="id">Document ID</option>
           </select>
         </div>
         <div class="filter-group">
-          <span class="filter-label">Corpus:</span>
-          <span style="color:var(--text-accent); font-weight:600;">35+ Documents Indexed</span>
+          <span class="corpus-badge">35 documents indexed</span>
         </div>
       </div>
     </section>
@@ -120,18 +123,15 @@
       <div class="results-header" id="resultsHeader" style="display: none;">
         <div class="results-stats">
           <span class="live-pulse-badge"><span class="pulse-dot"></span> Live Instant</span>
-          <span id="resultsCount">0</span> matches for <span id="resultsQuery" class="query-highlight">""</span>
+          <span id="resultsCount">0</span> results for <span id="resultsQuery" class="query-highlight">""</span>
           <span id="resultsLatency" class="results-latency">0.2ms</span>
-        </div>
-        <div class="ranking-formula-hint" title="Score = Exact Full Title (140) + Phrase Title (85) + Title Term (25/w) + Term Coverage (up to 70) + Proximity (25) + Popularity">
-          Score = Title(140) + Phrase(85) + Coverage(70) + Proximity(25)
         </div>
       </div>
 
       <!-- Loading Indicator -->
       <div id="loadingIndicator" class="loading-state" style="display: none;">
         <div class="spinner"></div>
-        <p>Scanning C++ Inverted Index &amp; Scoring Priority Queue...</p>
+        <p>Searching...</p>
       </div>
 
       <!-- Result Cards Container -->
@@ -139,43 +139,43 @@
 
       <!-- Empty State -->
       <div id="emptyState" class="empty-state" style="display: none;">
-        <div class="empty-icon">&gt; 0 results</div>
-        <h3>No Matching Records Found</h3>
-        <p>Try searching for core topics like <code>"c++"</code>, <code>"trie"</code>, <code>"algorithms"</code>, or <code>"data structures"</code>.</p>
+        <div class="empty-icon">🔍</div>
+        <h3>No results found</h3>
+        <p>Try searching for topics like "machine learning", "binary search tree", "c++", or "algorithms".</p>
       </div>
     </section>
   </main>
 
-  <!-- Algorithm Info Modal / Drawer -->
+  <!-- How It Works Section -->
   <aside class="algo-sidebar container">
     <div class="algo-card">
       <div class="algo-header">
-        <span class="algo-badge">// Algorithmic Pipeline</span>
-        <h3 style="font-family:var(--font-mono); font-size:1.15rem;">Architecture Breakdown</h3>
+        <span class="algo-badge">Architecture</span>
+        <h3>How SmartSearch Works Under the Hood</h3>
       </div>
       <div class="algo-steps">
         <div class="step-item">
-          <div class="step-num">01</div>
+          <div class="step-num">1</div>
           <div>
-            <strong>Trie Prefix Autocomplete:</strong> Traverses character branches in <code>O(L)</code> time and performs frequency-weighted DFS for top suggestions.
+            <strong>Trie Prefix Autocomplete:</strong> Traverses character branches in O(L) time and extracts instant prefix suggestions as you type.
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">02</div>
+          <div class="step-num">2</div>
           <div>
-            <strong>Inverted Index Postings:</strong> <code>unordered_map&lt;string, vector&lt;int&gt;&gt;</code> maps word tokens to document IDs for <code>O(1)</code> candidate lookup.
+            <strong>Inverted Index:</strong> Maps each unique word to list of matching document IDs for instant O(1) candidate lookup.
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">03</div>
+          <div class="step-num">3</div>
           <div>
-            <strong>Multi-Factor Scorer:</strong> Ranks matches by Exact Title Match, keyword overlap, description frequency, and base popularity.
+            <strong>Context-Aware Scoring:</strong> Ranks results with exact title bonuses (+140), phrase matching (+85), and word proximity (+25).
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">04</div>
+          <div class="step-num">4</div>
           <div>
-            <strong>Min-Heap Priority Queue:</strong> Retains only the top 10 highest-scoring documents in <code>O(N log K)</code> time.
+            <strong>Min-Heap Priority Queue:</strong> Retains only the top 10 most relevant documents in O(N log K) time.
           </div>
         </div>
       </div>
@@ -184,8 +184,8 @@
 
   <footer class="site-footer">
     <div class="container footer-content">
-      <p>&copy; 2026 <strong>Smart Search Engine with Autocomplete</strong> &bull; College Capstone Project</p>
-      <p class="footer-meta">std::c++17 &bull; WinSock2 Sockets &bull; Zero External Dependencies</p>
+      <p>&copy; 2026 SmartSearch Engine &bull; College Capstone Project</p>
+      <p class="footer-meta">Powered by C++17 Information Retrieval Engine &bull; WinSock2 Sockets</p>
     </div>
   </footer>
 

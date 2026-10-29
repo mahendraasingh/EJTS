@@ -2,7 +2,7 @@
 
 A high-performance, Google-inspired search engine developed in **C++17** demonstrating the real-world application of **Data Structures and Algorithms (DSA)**, **Information Retrieval (IR)**, and **Full-Stack Systems Programming**.
 
-Unlike basic prefix search engines that match only single words, this upgraded engine understands the **complete user query and word sequence**, providing **context-aware multi-word suggestions** that become progressively more specific as more words are entered, backed by full-query relevance ranking, proximity scoring, and term coverage analysis.
+> 📖 **College Viva & Concepts Guide (Hinglish):** Detailed architecture diagrams, data structure breakdowns (Trie, Inverted Index, PhraseIndex, Min-Heap), and 10 top viva Q&As are available in [PROJECT_EXPLANATION_HINGLISH.md](PROJECT_EXPLANATION_HINGLISH.md).
 
 ---
 
