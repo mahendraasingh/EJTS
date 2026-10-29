@@ -1,0 +1,19 @@
+# Build and binary files
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+
+# IDE & Editor artifacts
+.vscode/
+.vs/
+build/
+bin/
+
+# Temporary test files
+data/test_history.txt
+data/history.txt
