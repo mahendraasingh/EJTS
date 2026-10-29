@@ -1,0 +1,177 @@
+[
+  {
+    "id": 1,
+    "title": "Introduction to C++ Programming Language",
+    "description": "C++ is a high-performance, statically typed, compiled general-purpose programming language developed by Bjarne Stroustrup. It supports procedural, object-oriented, and generic programming paradigms.",
+    "keywords": ["c++", "programming", "language", "oop", "bjarne", "stroustrup", "compiled", "stl"],
+    "popularity": 95
+  },
+  {
+    "id": 2,
+    "title": "Understanding Data Structures and Algorithms",
+    "description": "Data structures are specialized formats for organizing, processing, and retrieving data efficiently. Core algorithms include sorting, searching, graph traversal, and dynamic programming.",
+    "keywords": ["data structures", "algorithms", "dsa", "sorting", "searching", "trie", "trees", "graphs"],
+    "popularity": 90
+  },
+  {
+    "id": 3,
+    "title": "Trie Data Structure and Prefix Matching",
+    "description": "A Trie, or prefix tree, is an efficient retrieval tree data structure used for locating specific keys within a set. It is widely used in autocomplete systems, spell checkers, and IP routing.",
+    "keywords": ["trie", "prefix tree", "autocomplete", "strings", "prefix search", "dictionary", "radix"],
+    "popularity": 88
+  },
+  {
+    "id": 4,
+    "title": "Object-Oriented Programming Concepts in C++",
+    "description": "Object-Oriented Programming (OOP) in C++ revolves around four core pillars: Encapsulation, Abstraction, Inheritance, and Polymorphism. Classes and objects model real-world entities cleanly.",
+    "keywords": ["oop", "object oriented", "inheritance", "polymorphism", "encapsulation", "abstraction", "classes"],
+    "popularity": 85
+  },
+  {
+    "id": 5,
+    "title": "Standard Template Library (STL) Overview",
+    "description": "The C++ Standard Template Library provides generic containers like vector, unordered_map, list, priority_queue, along with rich algorithms like sort, binary_search, and reverse.",
+    "keywords": ["stl", "standard template library", "vector", "unordered_map", "priority_queue", "containers"],
+    "popularity": 82
+  },
+  {
+    "id": 6,
+    "title": "Building Search Engines: Indexing and Ranking",
+    "description": "Modern search engines crawl web pages, extract textual content, build inverted index tables, and score relevance using algorithms like TF-IDF, BM25, and PageRank.",
+    "keywords": ["search engine", "indexing", "ranking", "tf-idf", "information retrieval", "bm25", "pagerank"],
+    "popularity": 79
+  },
+  {
+    "id": 7,
+    "title": "Dynamic Memory Management and Smart Pointers",
+    "description": "Modern C++ eliminates raw memory leak risks through RAII and smart pointers like std::unique_ptr, std::shared_ptr, and std::weak_ptr located in the <memory> header.",
+    "keywords": ["memory management", "smart pointers", "unique_ptr", "shared_ptr", "raii", "leak", "pointers"],
+    "popularity": 75
+  },
+  {
+    "id": 8,
+    "title": "Time and Space Complexity Analysis: Big-O Notation",
+    "description": "Big-O notation quantifies algorithm performance as input sizes grow. It classifies run-time bottlenecks from logarithmic O(log N) and linear O(N) up to quadratic O(N^2) time.",
+    "keywords": ["big o", "time complexity", "space complexity", "asymptotic analysis", "algorithm efficiency"],
+    "popularity": 78
+  },
+  {
+    "id": 9,
+    "title": "Hash Maps and Collision Resolution Techniques",
+    "description": "Hash tables offer average O(1) time complexity for insertions and lookups. Common collision resolution strategies include separate chaining with linked lists and open addressing with linear probing.",
+    "keywords": ["hash map", "hash table", "unordered_map", "collision resolution", "chaining", "probing"],
+    "popularity": 72
+  },
+  {
+    "id": 10,
+    "title": "Priority Queues and Binary Heaps",
+    "description": "A priority queue allows fast retrieval of the highest or lowest priority element. Backed by a binary min-heap or max-heap, it provides O(log N) insertions and removals.",
+    "keywords": ["priority queue", "heap", "binary heap", "max-heap", "min-heap", "top k", "ranking"],
+    "popularity": 70
+  },
+  {
+    "id": 11,
+    "title": "Full-Stack Web Development Fundamentals",
+    "description": "Full-stack development involves building responsive user interfaces with HTML5, CSS3, and modern JavaScript, coupled with RESTful backend microservices and relational or NoSQL databases.",
+    "keywords": ["web development", "full stack", "html", "css", "javascript", "rest api", "backend", "frontend"],
+    "popularity": 86
+  },
+  {
+    "id": 12,
+    "title": "Computer Networks and Socket Programming",
+    "description": "Socket programming enables cross-network communication between client and server over TCP/IP and UDP protocols. Windows provides the WinSock2 API for building high-speed network servers.",
+    "keywords": ["networking", "sockets", "tcp", "udp", "winsock", "http", "client server", "ip protocol"],
+    "popularity": 76
+  },
+  {
+    "id": 13,
+    "title": "Database Management Systems (DBMS) and SQL",
+    "description": "A Database Management System manages structured datasets, enforcing ACID transactional guarantees. Structured Query Language (SQL) enables filtering, joining, and aggregating complex relational data.",
+    "keywords": ["dbms", "database", "sql", "acid", "relational", "sqlite", "mysql", "transactions"],
+    "popularity": 74
+  },
+  {
+    "id": 14,
+    "title": "Operating Systems: Process Synchronization and Threads",
+    "description": "Operating systems schedule processes and manage threads. Critical synchronization mechanisms include mutexes, semaphores, and condition variables to prevent race conditions and deadlocks.",
+    "keywords": ["operating systems", "os", "threads", "concurrency", "mutex", "deadlock", "synchronization"],
+    "popularity": 71
+  },
+  {
+    "id": 15,
+    "title": "String Tokenization and Text Normalization",
+    "description": "Natural language query processing requires cleaning raw input strings: converting to lowercase, stripping punctuation, breaking text into individual word tokens, and eliminating stop words.",
+    "keywords": ["string processing", "tokenization", "normalization", "lowercase", "text processing", "nlp"],
+    "popularity": 68
+  },
+  {
+    "id": 16,
+    "title": "File Handling in C++ with fstream",
+    "description": "C++ file handling via std::ifstream, std::ofstream, and std::fstream provides stream-based input and output for reading configuration data, parsing documents, and storing persistent search history.",
+    "keywords": ["file handling", "fstream", "ifstream", "ofstream", "persistence", "io", "serialization"],
+    "popularity": 69
+  },
+  {
+    "id": 17,
+    "title": "Artificial Intelligence and Machine Learning Primer",
+    "description": "Artificial intelligence empowers computers to solve complex problems and learn from patterns. Subfields include supervised machine learning, deep neural networks, and computer vision.",
+    "keywords": ["ai", "machine learning", "deep learning", "neural networks", "artificial intelligence", "data"],
+    "popularity": 92
+  },
+  {
+    "id": 18,
+    "title": "Cybersecurity Principles and Web Application Defense",
+    "description": "Application security involves guarding against vulnerabilities like SQL injection, Cross-Site Scripting (XSS), and insecure direct object references through strict input sanitization.",
+    "keywords": ["security", "cybersecurity", "xss", "sanitization", "defense", "authentication", "encryption"],
+    "popularity": 67
+  },
+  {
+    "id": 19,
+    "title": "Software Engineering Design Patterns",
+    "description": "Design patterns provide reusable templates for common software engineering challenges. Popular categories include creational patterns like Singleton and Factory, and behavioral patterns like Observer.",
+    "keywords": ["design patterns", "software engineering", "singleton", "factory", "observer", "clean architecture"],
+    "popularity": 73
+  },
+  {
+    "id": 20,
+    "title": "Version Control Systems with Git and GitHub",
+    "description": "Git is a distributed version control tool tracking source code revisions across commits and branches. Platforms like GitHub foster collaborative open-source workflows and continuous integration.",
+    "keywords": ["git", "github", "version control", "commits", "branches", "collaboration", "open source"],
+    "popularity": 89
+  },
+  {
+    "id": 21,
+    "title": "Compiler Design and Lexical Analysis",
+    "description": "Compilers translate high-level program source code into machine executables. Phases include lexical analysis with scanners, syntax analysis with parsers, optimization, and binary code generation.",
+    "keywords": ["compiler", "lexical analysis", "syntax parsing", "code generation", "ast", "grammar"],
+    "popularity": 64
+  },
+  {
+    "id": 22,
+    "title": "Graph Algorithms: Dijkstra, BFS, and DFS",
+    "description": "Graph algorithms solve routing, network flow, and connectivity challenges. Breadth-First Search (BFS) and Depth-First Search (DFS) explore nodes, while Dijkstra's algorithm finds shortest paths.",
+    "keywords": ["graphs", "dijkstra", "bfs", "dfs", "shortest path", "graph traversal", "nodes"],
+    "popularity": 81
+  },
+  {
+    "id": 23,
+    "title": "Cloud Computing and Distributed Systems",
+    "description": "Cloud architectures host elastic virtual services across geographically separated data centers. Concepts include horizontal scaling, load balancing, fault tolerance, and consensus protocols.",
+    "keywords": ["cloud computing", "distributed systems", "scaling", "microservices", "load balancer", "aws"],
+    "popularity": 77
+  },
+  {
+    "id": 24,
+    "title": "Mobile App Development with React Native and Flutter",
+    "description": "Cross-platform mobile frameworks allow developers to craft native iOS and Android experiences using single codebases, hot reload iteration, and declarative widget component trees.",
+    "keywords": ["mobile", "react native", "flutter", "android", "ios", "cross platform", "apps"],
+    "popularity": 80
+  },
+  {
+    "id": 25,
+    "title": "Continuous Integration and DevOps Pipelines",
+    "description": "DevOps integrates software engineering with IT operations to accelerate release velocity. CI/CD pipelines automate testing, linting, Docker containerization, and blue-green cloud deployments.",
+    "keywords": ["devops", "ci cd", "continuous integration", "docker", "automation", "deployment"],
+    "popularity": 75
+  }
+]
