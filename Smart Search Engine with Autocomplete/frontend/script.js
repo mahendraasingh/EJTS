@@ -1,0 +1,346 @@
+// Determine Backend Base API URL
+const API_BASE = (window.location.protocol === 'file:') ? 'http://localhost:8080' : window.location.origin;
+
+// DOM Elements
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const clearInputBtn = document.getElementById('clearInputBtn');
+const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+const popularTagsContainer = document.getElementById('popularTags');
+const historyTagsContainer = document.getElementById('historyTags');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const resultsSection = document.getElementById('resultsSection');
+const resultsHeader = document.getElementById('resultsHeader');
+const resultsCount = document.getElementById('resultsCount');
+const resultsQuery = document.getElementById('resultsQuery');
+const resultsContainer = document.getElementById('resultsContainer');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const emptyState = document.getElementById('emptyState');
+
+let debounceTimer = null;
+let activeSuggestionIndex = -1;
+let currentSuggestions = [];
+
+// --- Autocomplete Handling ---
+
+function debounce(func, delay = 150) {
+  return (...args) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func(...args), delay);
+  };
+}
+
+async function fetchSuggestions(prefix) {
+  if (!prefix || prefix.trim().length === 0) {
+    hideSuggestions();
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(prefix.trim())}`);
+    if (!res.ok) throw new Error('Failed to fetch suggestions');
+    const suggestions = await res.json();
+    currentSuggestions = suggestions;
+    renderSuggestions(suggestions, prefix.trim());
+  } catch (err) {
+    console.warn('[Autocomplete] Error fetching Trie suggestions:', err);
+    hideSuggestions();
+  }
+}
+
+function renderSuggestions(suggestions, prefix) {
+  suggestionsDropdown.innerHTML = '';
+  activeSuggestionIndex = -1;
+
+  if (!suggestions || suggestions.length === 0) {
+    hideSuggestions();
+    return;
+  }
+
+  suggestions.forEach((item, index) => {
+    const li = document.createElement('li');
+    li.className = 'suggestion-item';
+    li.setAttribute('role', 'option');
+
+    // Highlight matching prefix part in suggestion
+    let highlightedText = item;
+    const lowerItem = item.toLowerCase();
+    const lowerPrefix = prefix.toLowerCase();
+    if (lowerItem.startsWith(lowerPrefix)) {
+      const matchPart = item.substring(0, prefix.length);
+      const restPart = item.substring(prefix.length);
+      highlightedText = `<span class="suggestion-prefix">${escapeHtml(matchPart)}</span>${escapeHtml(restPart)}`;
+    } else {
+      highlightedText = escapeHtml(item);
+    }
+
+    li.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>${highlightedText}</span>
+      </div>
+      <span class="suggestion-badge">Trie match</span>
+    `;
+
+    li.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // Prevent blur on input
+      selectSuggestion(item);
+    });
+
+    suggestionsDropdown.appendChild(li);
+  });
+
+  suggestionsDropdown.style.display = 'block';
+}
+
+function hideSuggestions() {
+  suggestionsDropdown.style.display = 'none';
+  currentSuggestions = [];
+  activeSuggestionIndex = -1;
+}
+
+function selectSuggestion(text) {
+  searchInput.value = text;
+  hideSuggestions();
+  executeSearch(text);
+}
+
+// Keyboard navigation in suggestions list
+searchInput.addEventListener('keydown', (e) => {
+  const items = suggestionsDropdown.querySelectorAll('.suggestion-item');
+  if (items.length === 0) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeSearch(searchInput.value);
+    }
+    return;
+  }
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+    updateActiveSuggestion(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+    updateActiveSuggestion(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (activeSuggestionIndex >= 0 && activeSuggestionIndex < currentSuggestions.length) {
+      selectSuggestion(currentSuggestions[activeSuggestionIndex]);
+    } else {
+      hideSuggestions();
+      executeSearch(searchInput.value);
+    }
+  } else if (e.key === 'Escape') {
+    hideSuggestions();
+  }
+});
+
+function updateActiveSuggestion(items) {
+  items.forEach((item, idx) => {
+    if (idx === activeSuggestionIndex) {
+      item.classList.add('active');
+      searchInput.value = currentSuggestions[idx];
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+searchInput.addEventListener('input', () => {
+  const query = searchInput.value;
+  clearInputBtn.style.display = query.length > 0 ? 'block' : 'none';
+  debounce(() => fetchSuggestions(query), 150)();
+});
+
+clearInputBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearInputBtn.style.display = 'none';
+  hideSuggestions();
+  searchInput.focus();
+});
+
+document.addEventListener('click', (e) => {
+  if (!searchInput.contains(e.target) && !suggestionsDropdown.contains(e.target)) {
+    hideSuggestions();
+  }
+});
+
+// --- Search Execution & Results Rendering ---
+
+searchBtn.addEventListener('click', () => {
+  executeSearch(searchInput.value);
+});
+
+async function executeSearch(query) {
+  if (!query || query.trim().length === 0) {
+    return;
+  }
+
+  hideSuggestions();
+  const cleanQuery = query.trim();
+
+  // Show loading indicator
+  loadingIndicator.style.display = 'block';
+  resultsContainer.innerHTML = '';
+  resultsHeader.style.display = 'none';
+  emptyState.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(cleanQuery)}`);
+    if (!res.ok) throw new Error('Search request failed');
+    const data = await res.json();
+
+    loadingIndicator.style.display = 'none';
+    renderSearchResults(data);
+
+    // Refresh history and popular pills
+    loadHistory();
+    loadPopular();
+  } catch (err) {
+    loadingIndicator.style.display = 'none';
+    console.error('[Search] Error querying backend:', err);
+    resultsContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <h3>Backend Connection Error</h3>
+        <p>Ensure the C++ HTTP server is running on <code>http://localhost:8080</code>.</p>
+      </div>
+    `;
+  }
+}
+
+function renderSearchResults(data) {
+  resultsHeader.style.display = 'flex';
+  resultsCount.textContent = data.count || 0;
+  resultsQuery.textContent = `"${data.query}"`;
+
+  if (!data.results || data.results.length === 0) {
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  data.results.forEach((item, index) => {
+    const card = document.createElement('article');
+    card.className = 'result-card';
+
+    const doc = item.document;
+    const scoreFormatted = Number(item.score).toFixed(1);
+
+    // Render keyword pills
+    const kwHtml = (doc.keywords || []).map(kw => {
+      return `<span class="kw-tag">${escapeHtml(kw)}</span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
+        <span class="score-pill">Rank #${index + 1} &bull; ${scoreFormatted} pts</span>
+      </div>
+      <p class="card-desc">${item.highlightedDescription || escapeHtml(doc.description)}</p>
+      <div class="card-footer">
+        <div class="card-keywords">${kwHtml}</div>
+        <div class="card-meta">
+          <span>Doc ID: #${doc.id}</span>
+          <span>&bull;</span>
+          <span>Base Popularity: ${doc.popularity}</span>
+        </div>
+      </div>
+    `;
+
+    resultsContainer.appendChild(card);
+  });
+}
+
+// --- Popular & History Sections ---
+
+async function loadPopular() {
+  try {
+    const res = await fetch(`${API_BASE}/api/popular`);
+    if (!res.ok) return;
+    const popular = await res.json();
+
+    popularTagsContainer.innerHTML = '';
+    if (!popular || popular.length === 0) {
+      popularTagsContainer.innerHTML = '<span class="empty-hint">No popular searches yet</span>';
+      return;
+    }
+
+    popular.forEach(item => {
+      const chip = document.createElement('button');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `<span>${escapeHtml(item.query)}</span><span class="tag-count">${item.count}</span>`;
+      chip.addEventListener('click', () => {
+        searchInput.value = item.query;
+        clearInputBtn.style.display = 'block';
+        executeSearch(item.query);
+      });
+      popularTagsContainer.appendChild(chip);
+    });
+  } catch (err) {
+    console.warn('[Popular] Failed to load popular searches:', err);
+  }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API_BASE}/api/history`);
+    if (!res.ok) return;
+    const history = await res.json();
+
+    historyTagsContainer.innerHTML = '';
+    if (!history || history.length === 0) {
+      historyTagsContainer.innerHTML = '<span class="empty-hint">No recent searches yet</span>';
+      return;
+    }
+
+    history.forEach(query => {
+      const chip = document.createElement('button');
+      chip.className = 'tag-chip';
+      chip.textContent = query;
+      chip.addEventListener('click', () => {
+        searchInput.value = query;
+        clearInputBtn.style.display = 'block';
+        executeSearch(query);
+      });
+      historyTagsContainer.appendChild(chip);
+    });
+  } catch (err) {
+    console.warn('[History] Failed to load history:', err);
+  }
+}
+
+clearHistoryBtn.addEventListener('click', async () => {
+  if (!confirm('Clear all recent search history?')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/history`, { method: 'DELETE' });
+    if (res.ok) {
+      loadHistory();
+      loadPopular();
+    }
+  } catch (err) {
+    console.error('[History] Failed to clear history:', err);
+  }
+});
+
+// Helper to escape HTML characters
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Initial Boot
+window.addEventListener('DOMContentLoaded', () => {
+  loadPopular();
+  loadHistory();
+
+  // Execute a default showcase search to impress visitors on first load
+  setTimeout(() => {
+    executeSearch('programming');
+  }, 300);
+});
