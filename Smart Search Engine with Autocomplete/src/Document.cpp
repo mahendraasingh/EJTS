@@ -2,11 +2,13 @@
 #include <sstream>
 
 Document::Document()
-    : id(0), title(""), description(""), keywords({}), popularity(0) {}
+    : id(0), title(""), description(""), keywords({}), category("General"), url(""), popularity(0) {}
 
 Document::Document(int id, const std::string& title, const std::string& description,
-                   const std::vector<std::string>& keywords, int popularity)
-    : id(id), title(title), description(description), keywords(keywords), popularity(popularity) {}
+                   const std::vector<std::string>& keywords, const std::string& category,
+                   const std::string& url, int popularity)
+    : id(id), title(title), description(description), keywords(keywords),
+      category(category), url(url), popularity(popularity) {}
 
 int Document::getId() const {
     return id;
@@ -22,6 +24,14 @@ const std::string& Document::getDescription() const {
 
 const std::vector<std::string>& Document::getKeywords() const {
     return keywords;
+}
+
+const std::string& Document::getCategory() const {
+    return category;
+}
+
+const std::string& Document::getUrl() const {
+    return url;
 }
 
 int Document::getPopularity() const {
@@ -42,6 +52,14 @@ void Document::setDescription(const std::string& newDescription) {
 
 void Document::setKeywords(const std::vector<std::string>& newKeywords) {
     keywords = newKeywords;
+}
+
+void Document::setCategory(const std::string& newCategory) {
+    category = newCategory;
+}
+
+void Document::setUrl(const std::string& newUrl) {
+    url = newUrl;
 }
 
 void Document::setPopularity(int newPopularity) {
@@ -70,6 +88,8 @@ std::string Document::toJson() const {
     ss << "\"id\":" << id << ",";
     ss << "\"title\":\"" << escapeJson(title) << "\",";
     ss << "\"description\":\"" << escapeJson(description) << "\",";
+    ss << "\"category\":\"" << escapeJson(category) << "\",";
+    ss << "\"url\":\"" << escapeJson(url) << "\",";
     ss << "\"keywords\":[";
     for (size_t i = 0; i < keywords.size(); ++i) {
         ss << "\"" << escapeJson(keywords[i]) << "\"";

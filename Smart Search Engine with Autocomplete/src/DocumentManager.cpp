@@ -139,6 +139,8 @@ bool DocumentManager::loadFromJsonFile(const std::string& filepath) {
             std::string title = "";
             std::string description = "";
             std::vector<std::string> keywords;
+            std::string category = "General";
+            std::string url = "";
             int popularity = 0;
 
             while (pos < content.size()) {
@@ -162,6 +164,10 @@ bool DocumentManager::loadFromJsonFile(const std::string& filepath) {
                     description = parseString(content, pos);
                 } else if (key == "keywords") {
                     keywords = parseStringArray(content, pos);
+                } else if (key == "category") {
+                    category = parseString(content, pos);
+                } else if (key == "url") {
+                    url = parseString(content, pos);
                 } else if (key == "popularity") {
                     popularity = parseInt(content, pos);
                 } else {
@@ -183,7 +189,7 @@ bool DocumentManager::loadFromJsonFile(const std::string& filepath) {
             }
 
             if (id > 0 && !title.empty()) {
-                addDocument(Document(id, title, description, keywords, popularity));
+                addDocument(Document(id, title, description, keywords, category, url, popularity));
             }
         }
 
