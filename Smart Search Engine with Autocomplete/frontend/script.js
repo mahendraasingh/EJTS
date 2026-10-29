@@ -13,16 +13,71 @@ const resultsSection = document.getElementById('resultsSection');
 const resultsHeader = document.getElementById('resultsHeader');
 const resultsCount = document.getElementById('resultsCount');
 const resultsQuery = document.getElementById('resultsQuery');
+const resultsLatency = document.getElementById('resultsLatency');
 const resultsContainer = document.getElementById('resultsContainer');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const emptyState = document.getElementById('emptyState');
+const sortSelect = document.getElementById('sortSelect');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const iconMoon = document.querySelector('.icon-moon');
+const iconSun = document.querySelector('.icon-sun');
 
 let debounceTimer = null;
 let activeSuggestionIndex = -1;
 let currentSuggestions = [];
+let currentResults = [];
 
-// --- Autocomplete Handling ---
+// ==========================================================================
+// Theme Management (Dark & Light Mode)
+// ==========================================================================
+function initTheme() {
+  const savedTheme = localStorage.getItem('smartsearch-theme');
+  const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+  applyTheme(initialTheme);
+}
 
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('smartsearch-theme', theme);
+
+  if (theme === 'light') {
+    if (iconMoon) iconMoon.style.display = 'none';
+    if (iconSun) iconSun.style.display = 'block';
+  } else {
+    if (iconMoon) iconMoon.style.display = 'block';
+    if (iconSun) iconSun.style.display = 'none';
+  }
+}
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+  });
+}
+
+// ==========================================================================
+// Global Keyboard Shortcuts (Ctrl+K or '/')
+// ==========================================================================
+document.addEventListener('keydown', (e) => {
+  // Focus search with Ctrl+K or Cmd+K
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  // Focus search with '/' when not typing in an input
+  else if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+});
+
+// ==========================================================================
+// Autocomplete Handling (Trie Prefix Engine)
+// ==========================================================================
 function debounce(func, delay = 150) {
   return (...args) => {
     clearTimeout(debounceTimer);
@@ -57,6 +112,12 @@ function renderSuggestions(suggestions, prefix) {
     return;
   }
 
+  // Header hint in dropdown
+  const hintItem = document.createElement('li');
+  hintItem.className = 'dropdown-header-hint';
+  hintItem.innerHTML = `<span>Use ↑ ↓ to navigate, ↵ to select</span><span>ESC to close</span>`;
+  suggestionsDropdown.appendChild(hintItem);
+
   suggestions.forEach((item, index) => {
     const li = document.createElement('li');
     li.className = 'suggestion-item';
@@ -76,7 +137,7 @@ function renderSuggestions(suggestions, prefix) {
 
     li.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)">
           <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <span>${highlightedText}</span>
@@ -85,7 +146,7 @@ function renderSuggestions(suggestions, prefix) {
     `;
 
     li.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // Prevent blur on input
+      e.preventDefault();
       selectSuggestion(item);
     });
 
@@ -103,6 +164,7 @@ function hideSuggestions() {
 
 function selectSuggestion(text) {
   searchInput.value = text;
+  clearInputBtn.style.display = 'block';
   hideSuggestions();
   executeSearch(text);
 }
@@ -169,8 +231,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// --- Search Execution & Results Rendering ---
-
+// ==========================================================================
+// Search Execution & Results Rendering
+// ==========================================================================
 searchBtn.addEventListener('click', () => {
   executeSearch(searchInput.value);
 });
@@ -189,13 +252,17 @@ async function executeSearch(query) {
   resultsHeader.style.display = 'none';
   emptyState.style.display = 'none';
 
+  const startTime = performance.now();
+
   try {
     const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(cleanQuery)}`);
     if (!res.ok) throw new Error('Search request failed');
     const data = await res.json();
+    const duration = (performance.now() - startTime).toFixed(1);
 
     loadingIndicator.style.display = 'none';
-    renderSearchResults(data);
+    currentResults = data.results || [];
+    renderSearchResults(data, duration);
 
     // Refresh history and popular pills
     loadHistory();
@@ -213,50 +280,102 @@ async function executeSearch(query) {
   }
 }
 
-function renderSearchResults(data) {
+function sortResults(results, criterion) {
+  const sorted = [...results];
+  if (criterion === 'popularity') {
+    sorted.sort((a, b) => (b.document.popularity || 0) - (a.document.popularity || 0));
+  } else if (criterion === 'id') {
+    sorted.sort((a, b) => a.document.id - b.document.id);
+  } else {
+    // Default: relevance score
+    sorted.sort((a, b) => b.score - a.score);
+  }
+  return sorted;
+}
+
+if (sortSelect) {
+  sortSelect.addEventListener('change', () => {
+    if (currentResults.length > 0) {
+      renderCards(sortResults(currentResults, sortSelect.value));
+    }
+  });
+}
+
+function renderSearchResults(data, latencyMs) {
   resultsHeader.style.display = 'flex';
   resultsCount.textContent = data.count || 0;
   resultsQuery.textContent = `"${data.query}"`;
+  if (resultsLatency) {
+    resultsLatency.textContent = `${latencyMs}ms`;
+  }
 
   if (!data.results || data.results.length === 0) {
     emptyState.style.display = 'block';
     return;
   }
 
-  data.results.forEach((item, index) => {
+  const sorted = sortResults(data.results, sortSelect ? sortSelect.value : 'relevance');
+  renderCards(sorted);
+}
+
+function renderCards(resultsList) {
+  resultsContainer.innerHTML = '';
+
+  const maxScore = resultsList.length > 0 ? Math.max(...resultsList.map(r => r.score), 100) : 100;
+
+  resultsList.forEach((item, index) => {
     const card = document.createElement('article');
     card.className = 'result-card';
 
     const doc = item.document;
     const scoreFormatted = Number(item.score).toFixed(1);
+    const scorePercent = Math.min(100, Math.max(10, Math.round((item.score / maxScore) * 100)));
 
     // Render keyword pills
     const kwHtml = (doc.keywords || []).map(kw => {
-      return `<span class="kw-tag">${escapeHtml(kw)}</span>`;
+      return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">${escapeHtml(kw)}</button>`;
     }).join('');
 
     card.innerHTML = `
       <div class="card-top">
         <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
-        <span class="score-pill">Rank #${index + 1} &bull; ${scoreFormatted} pts</span>
+        <div class="score-badge-wrap">
+          <span class="score-pill">Rank #${index + 1} &bull; ${scoreFormatted} pts</span>
+          <div class="score-bar-track" title="Relevance: ${scorePercent}%">
+            <div class="score-bar-fill" style="width: ${scorePercent}%"></div>
+          </div>
+        </div>
       </div>
       <p class="card-desc">${item.highlightedDescription || escapeHtml(doc.description)}</p>
       <div class="card-footer">
         <div class="card-keywords">${kwHtml}</div>
         <div class="card-meta">
-          <span>Doc ID: #${doc.id}</span>
+          <span>Doc #${doc.id}</span>
           <span>&bull;</span>
-          <span>Base Popularity: ${doc.popularity}</span>
+          <span>Popularity: ${doc.popularity}/100</span>
         </div>
       </div>
     `;
+
+    // Keyword tag click listener
+    card.querySelectorAll('.kw-tag').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const kw = btn.getAttribute('data-kw');
+        if (kw) {
+          searchInput.value = kw;
+          clearInputBtn.style.display = 'block';
+          executeSearch(kw);
+        }
+      });
+    });
 
     resultsContainer.appendChild(card);
   });
 }
 
-// --- Popular & History Sections ---
-
+// ==========================================================================
+// Popular & History Sections
+// ==========================================================================
 async function loadPopular() {
   try {
     const res = await fetch(`${API_BASE}/api/popular`);
@@ -336,11 +455,12 @@ function escapeHtml(text) {
 
 // Initial Boot
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   loadPopular();
   loadHistory();
 
   // Execute a default showcase search to impress visitors on first load
   setTimeout(() => {
     executeSearch('programming');
-  }, 300);
+  }, 250);
 });

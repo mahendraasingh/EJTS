@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
   <meta name="description" content="High-performance C++ Search Engine with Trie-based prefix autocomplete, inverted indexing, and multi-factor relevance ranking.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
 
   <header class="site-header">
     <div class="container header-container">
-      <div class="brand">
+      <a href="/" class="brand">
         <div class="brand-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -28,13 +28,36 @@
         </div>
         <div>
           <h1 class="brand-title">SmartSearch<span class="gradient-text">.cpp</span></h1>
-          <p class="brand-subtitle">C++17 Trie Autocomplete & Ranked Information Retrieval</p>
+          <p class="brand-subtitle">C++17 Trie Autocomplete &amp; Ranked Retrieval</p>
         </div>
-      </div>
-      <div class="header-badges">
-        <span class="badge"><span class="dot"></span> C++17 Backend</span>
-        <span class="badge">O(L) Trie Lookup</span>
-        <span class="badge">Inverted Index</span>
+      </a>
+
+      <div class="header-actions">
+        <div class="header-badges">
+          <span class="badge"><span class="dot"></span> C++17 Engine</span>
+          <span class="badge">O(L) Trie</span>
+          <span class="badge">Inverted Index</span>
+        </div>
+
+        <!-- Light / Dark Mode Toggle Button -->
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
+          <!-- Moon Icon (for dark mode) -->
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <!-- Sun Icon (for light mode) -->
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -42,14 +65,17 @@
   <main class="main-content container">
     <!-- Hero Section with Centered Search -->
     <section class="hero-section">
-      <div class="hero-badge">Data Structures &amp; Algorithms Capstone</div>
-      <h2 class="hero-headline">Intelligent Search with <span class="gradient-text">Instant Autocomplete</span></h2>
-      <p class="hero-desc">Explore technical documents ranked by algorithmic relevance scoring with real-time prefix prediction powered by a pure C++ Trie.</p>
+      <div class="hero-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Data Structures &amp; Algorithms Capstone
+      </div>
+      <h2 class="hero-headline">Instant Search with <span class="gradient-text">Trie Autocomplete</span></h2>
+      <p class="hero-desc">Ultra-fast Information Retrieval across technical documents, ranked by multi-factor algorithmic scoring with sub-millisecond prefix predictions.</p>
 
       <div class="search-wrapper">
         <div class="search-box">
           <span class="search-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -62,6 +88,7 @@
             spellcheck="false"
             aria-label="Search query"
           >
+          <span class="kbd-shortcut" title="Press / or Ctrl+K to focus search bar">Ctrl K</span>
           <button id="clearInputBtn" class="clear-btn" aria-label="Clear input" style="display: none;">&times;</button>
           <button id="searchBtn" class="primary-btn">
             <span>Search</span>
@@ -86,7 +113,6 @@
             Popular:
           </div>
           <div id="popularTags" class="tag-list">
-            <!-- Populated dynamically -->
             <span class="tag-skeleton">Loading popular searches...</span>
           </div>
         </div>
@@ -102,6 +128,22 @@
           <button id="clearHistoryBtn" class="text-btn" title="Clear Search History">Clear History</button>
         </div>
       </div>
+
+      <!-- Filter / Sort Toolbar -->
+      <div class="filter-toolbar">
+        <div class="filter-group">
+          <span class="filter-label">Sort By:</span>
+          <select id="sortSelect" class="filter-select">
+            <option value="relevance" selected>Relevance Score (Highest First)</option>
+            <option value="popularity">Document Popularity</option>
+            <option value="id">Document ID</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Corpus Status:</span>
+          <span style="color:var(--text-accent); font-weight:600;">25 Documents Indexed</span>
+        </div>
+      </div>
     </section>
 
     <!-- Results Section -->
@@ -109,6 +151,7 @@
       <div class="results-header" id="resultsHeader" style="display: none;">
         <div class="results-stats">
           <span id="resultsCount">0</span> documents found for <span id="resultsQuery" class="query-highlight">""</span>
+          <span id="resultsLatency" class="results-latency">0.5ms</span>
         </div>
         <div class="ranking-formula-hint" title="Score = Exact Match (50) + Title (20/w) + Keywords (15/w) + Desc (5/w) + Popularity Bonus">
           Scoring Formula: Exact(50) + Title(20) + Keywords(15) + Desc(5) + Pop(0.2x)
