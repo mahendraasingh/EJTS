@@ -115,7 +115,7 @@ function renderSuggestions(suggestions, prefix) {
   // Header hint in dropdown
   const hintItem = document.createElement('li');
   hintItem.className = 'dropdown-header-hint';
-  hintItem.innerHTML = `<span>Use ↑ ↓ to navigate, ↵ to select</span><span>ESC to close</span>`;
+  hintItem.innerHTML = `<span>// Trie prefix lookup [${suggestions.length} matches]</span><span>ESC to exit</span>`;
   suggestionsDropdown.appendChild(hintItem);
 
   suggestions.forEach((item, index) => {
@@ -137,12 +137,10 @@ function renderSuggestions(suggestions, prefix) {
 
     li.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)">
-          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
+        <span style="color:var(--syn-function); font-family:var(--font-mono);">&gt;</span>
         <span>${highlightedText}</span>
       </div>
-      <span class="suggestion-badge">Trie match</span>
+      <span class="suggestion-badge">Trie::node</span>
     `;
 
     li.addEventListener('mousedown', (e) => {
@@ -272,9 +270,9 @@ async function executeSearch(query) {
     console.error('[Search] Error querying backend:', err);
     resultsContainer.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <h3>Backend Connection Error</h3>
-        <p>Ensure the C++ HTTP server is running on <code>http://localhost:8080</code>.</p>
+        <div class="empty-icon">[!] Connection Error</div>
+        <h3>Failed to connect to C++ backend</h3>
+        <p>Ensure the WinSock2 server is active at <code>http://localhost:8080</code>.</p>
       </div>
     `;
   }
@@ -333,26 +331,37 @@ function renderCards(resultsList) {
 
     // Render keyword pills
     const kwHtml = (doc.keywords || []).map(kw => {
-      return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">${escapeHtml(kw)}</button>`;
+      return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">#${escapeHtml(kw)}</button>`;
     }).join('');
 
     card.innerHTML = `
-      <div class="card-top">
-        <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
-        <div class="score-badge-wrap">
-          <span class="score-pill">Rank #${index + 1} &bull; ${scoreFormatted} pts</span>
-          <div class="score-bar-track" title="Relevance: ${scorePercent}%">
-            <div class="score-bar-fill" style="width: ${scorePercent}%"></div>
+      <div class="card-terminal-bar">
+        <div class="terminal-dots">
+          <span class="t-dot t-dot-red"></span>
+          <span class="t-dot t-dot-yellow"></span>
+          <span class="t-dot t-dot-green"></span>
+        </div>
+        <span>document_${doc.id}.cpp</span>
+        <span>rank: #${index + 1}</span>
+      </div>
+      <div class="card-content-body">
+        <div class="card-top">
+          <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
+          <div class="score-badge-wrap">
+            <span class="score-pill">${scoreFormatted} pts</span>
+            <div class="score-bar-track" title="Relevance: ${scorePercent}%">
+              <div class="score-bar-fill" style="width: ${scorePercent}%"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <p class="card-desc">${item.highlightedDescription || escapeHtml(doc.description)}</p>
-      <div class="card-footer">
-        <div class="card-keywords">${kwHtml}</div>
-        <div class="card-meta">
-          <span>Doc #${doc.id}</span>
-          <span>&bull;</span>
-          <span>Popularity: ${doc.popularity}/100</span>
+        <p class="card-desc">${item.highlightedDescription || escapeHtml(doc.description)}</p>
+        <div class="card-footer">
+          <div class="card-keywords">${kwHtml}</div>
+          <div class="card-meta">
+            <span>id: 0x${doc.id.toString(16).padStart(2, '0')}</span>
+            <span>&bull;</span>
+            <span>popularity: ${doc.popularity}%</span>
+          </div>
         </div>
       </div>
     `;
@@ -384,7 +393,7 @@ async function loadPopular() {
 
     popularTagsContainer.innerHTML = '';
     if (!popular || popular.length === 0) {
-      popularTagsContainer.innerHTML = '<span class="empty-hint">No popular searches yet</span>';
+      popularTagsContainer.innerHTML = '<span class="empty-hint">// no popular queries yet</span>';
       return;
     }
 
@@ -412,7 +421,7 @@ async function loadHistory() {
 
     historyTagsContainer.innerHTML = '';
     if (!history || history.length === 0) {
-      historyTagsContainer.innerHTML = '<span class="empty-hint">No recent searches yet</span>';
+      historyTagsContainer.innerHTML = '<span class="empty-hint">// no recent searches</span>';
       return;
     }
 

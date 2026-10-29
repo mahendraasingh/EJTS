@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Search Engine with Autocomplete | C++17 DSA Capstone</title>
-  <meta name="description" content="High-performance C++ Search Engine with Trie-based prefix autocomplete, inverted indexing, and multi-factor relevance ranking.">
+  <meta name="description" content="Developer-grade C++ Search Engine with Trie-based prefix autocomplete, inverted indexing, and multi-factor relevance ranking.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,16 +19,11 @@
     <div class="container header-container">
       <a href="/" class="brand">
         <div class="brand-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            <path d="M11 8v6"></path>
-            <path d="M8 11h6"></path>
-          </svg>
+          <span>&gt;_</span>
         </div>
         <div>
-          <h1 class="brand-title">SmartSearch<span class="gradient-text">.cpp</span></h1>
-          <p class="brand-subtitle">C++17 Trie Autocomplete &amp; Ranked Retrieval</p>
+          <h1 class="brand-title"><span class="prompt-prefix">std::</span>search<span class="gradient-text">&lt;Trie&gt;</span></h1>
+          <p class="brand-subtitle">// C++17 Inverted Index &amp; Autocomplete Engine</p>
         </div>
       </a>
 
@@ -42,11 +37,11 @@
         <!-- Light / Dark Mode Toggle Button -->
         <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
           <!-- Moon Icon (for dark mode) -->
-          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
           <!-- Sun Icon (for light mode) -->
-          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -66,24 +61,19 @@
     <!-- Hero Section with Centered Search -->
     <section class="hero-section">
       <div class="hero-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        Data Structures &amp; Algorithms Capstone
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        Algorithms &amp; Information Retrieval Engine
       </div>
-      <h2 class="hero-headline">Instant Search with <span class="gradient-text">Trie Autocomplete</span></h2>
-      <p class="hero-desc">Ultra-fast Information Retrieval across technical documents, ranked by multi-factor algorithmic scoring with sub-millisecond prefix predictions.</p>
+      <h2 class="hero-headline">Smart Search with <span class="gradient-text">Trie Autocomplete</span></h2>
+      <p class="hero-desc">Sub-millisecond prefix retrieval powered by a pure C++ Trie, coupled with inverted indexing and multi-factor relevance ranking.</p>
 
       <div class="search-wrapper">
         <div class="search-box">
-          <span class="search-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </span>
+          <span class="terminal-prompt-char">&gt;_</span>
           <input 
             type="text" 
             id="searchInput" 
-            placeholder="Search programming concepts, e.g., 'trie', 'c++', 'algorithms'..." 
+            placeholder="query.search(&quot;trie&quot;, &quot;c++&quot;, &quot;algorithms&quot;)..." 
             autocomplete="off" 
             spellcheck="false"
             aria-label="Search query"
@@ -91,8 +81,8 @@
           <span class="kbd-shortcut" title="Press / or Ctrl+K to focus search bar">Ctrl K</span>
           <button id="clearInputBtn" class="clear-btn" aria-label="Clear input" style="display: none;">&times;</button>
           <button id="searchBtn" class="primary-btn">
-            <span>Search</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <span>Execute</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
@@ -113,34 +103,34 @@
             Popular:
           </div>
           <div id="popularTags" class="tag-list">
-            <span class="tag-skeleton">Loading popular searches...</span>
+            <span class="tag-skeleton">// loading popular queries...</span>
           </div>
         </div>
 
         <div class="quick-row">
           <div class="quick-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            Recent:
+            History:
           </div>
           <div id="historyTags" class="tag-list">
-            <span class="empty-hint">No recent searches yet</span>
+            <span class="empty-hint">// no recent searches recorded</span>
           </div>
-          <button id="clearHistoryBtn" class="text-btn" title="Clear Search History">Clear History</button>
+          <button id="clearHistoryBtn" class="text-btn" title="Clear Search History">[clear_history()]</button>
         </div>
       </div>
 
       <!-- Filter / Sort Toolbar -->
       <div class="filter-toolbar">
         <div class="filter-group">
-          <span class="filter-label">Sort By:</span>
+          <span class="filter-label">std::sort_by:</span>
           <select id="sortSelect" class="filter-select">
-            <option value="relevance" selected>Relevance Score (Highest First)</option>
-            <option value="popularity">Document Popularity</option>
-            <option value="id">Document ID</option>
+            <option value="relevance" selected>Score (Relevance Highest First)</option>
+            <option value="popularity">Popularity (doc.popularity)</option>
+            <option value="id">ID (doc.id)</option>
           </select>
         </div>
         <div class="filter-group">
-          <span class="filter-label">Corpus Status:</span>
+          <span class="filter-label">Corpus:</span>
           <span style="color:var(--text-accent); font-weight:600;">25 Documents Indexed</span>
         </div>
       </div>
@@ -150,18 +140,18 @@
     <section id="resultsSection" class="results-section">
       <div class="results-header" id="resultsHeader" style="display: none;">
         <div class="results-stats">
-          <span id="resultsCount">0</span> documents found for <span id="resultsQuery" class="query-highlight">""</span>
-          <span id="resultsLatency" class="results-latency">0.5ms</span>
+          <span id="resultsCount">0</span> matches returned for <span id="resultsQuery" class="query-highlight">""</span>
+          <span id="resultsLatency" class="results-latency">0.4ms</span>
         </div>
         <div class="ranking-formula-hint" title="Score = Exact Match (50) + Title (20/w) + Keywords (15/w) + Desc (5/w) + Popularity Bonus">
-          Scoring Formula: Exact(50) + Title(20) + Keywords(15) + Desc(5) + Pop(0.2x)
+          Score = Exact(50) + Title(20) + Keywords(15) + Desc(5) + Pop(0.2x)
         </div>
       </div>
 
       <!-- Loading Indicator -->
       <div id="loadingIndicator" class="loading-state" style="display: none;">
         <div class="spinner"></div>
-        <p>Querying C++ Inverted Index &amp; Scoring Results...</p>
+        <p>Scanning C++ Inverted Index &amp; Scoring Priority Queue...</p>
       </div>
 
       <!-- Result Cards Container -->
@@ -169,9 +159,9 @@
 
       <!-- Empty State -->
       <div id="emptyState" class="empty-state" style="display: none;">
-        <div class="empty-icon">🔍</div>
-        <h3>No Matching Documents Found</h3>
-        <p>We couldn't find any documents matching your search. Try using our autocomplete suggestions or search for topics like <strong>"C++"</strong>, <strong>"Trie"</strong>, or <strong>"Algorithms"</strong>.</p>
+        <div class="empty-icon">&gt; 0 results</div>
+        <h3>No Matching Records Found</h3>
+        <p>Try searching for core topics like <code>"c++"</code>, <code>"trie"</code>, <code>"algorithms"</code>, or <code>"data structures"</code>.</p>
       </div>
     </section>
   </main>
@@ -180,32 +170,32 @@
   <aside class="algo-sidebar container">
     <div class="algo-card">
       <div class="algo-header">
-        <span class="algo-badge">Under the Hood</span>
-        <h3>How This Search Engine Works</h3>
+        <span class="algo-badge">// Algorithmic Pipeline</span>
+        <h3 style="font-family:var(--font-mono); font-size:1.15rem;">Architecture Breakdown</h3>
       </div>
       <div class="algo-steps">
         <div class="step-item">
-          <div class="step-num">1</div>
+          <div class="step-num">01</div>
           <div>
-            <strong>Trie Prefix Autocomplete:</strong> As you type, the Trie traverses down prefix branches in <code>O(L)</code> time and uses a frequency-weighted DFS to extract the top suggestions.
+            <strong>Trie Prefix Autocomplete:</strong> Traverses character branches in <code>O(L)</code> time and performs frequency-weighted DFS for top suggestions.
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">2</div>
+          <div class="step-num">02</div>
           <div>
-            <strong>Inverted Indexing:</strong> An <code>unordered_map&lt;string, vector&lt;int&gt;&gt;</code> maps tokenized words directly to document IDs for instant <code>O(1)</code> candidate lookup.
+            <strong>Inverted Index Postings:</strong> <code>unordered_map&lt;string, vector&lt;int&gt;&gt;</code> maps word tokens to document IDs for <code>O(1)</code> candidate lookup.
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">3</div>
+          <div class="step-num">03</div>
           <div>
-            <strong>Multi-Factor Ranking:</strong> Documents are scored by title matches, keyword relevance, description frequency, and base popularity.
+            <strong>Multi-Factor Scorer:</strong> Ranks matches by Exact Title Match, keyword overlap, description frequency, and base popularity.
           </div>
         </div>
         <div class="step-item">
-          <div class="step-num">4</div>
+          <div class="step-num">04</div>
           <div>
-            <strong>Priority Queue Top-K:</strong> A Min-Heap (<code>priority_queue</code>) retains the top 10 highest-scoring documents in <code>O(N log K)</code> time.
+            <strong>Min-Heap Priority Queue:</strong> Retains only the top 10 highest-scoring documents in <code>O(N log K)</code> time.
           </div>
         </div>
       </div>
@@ -215,7 +205,7 @@
   <footer class="site-footer">
     <div class="container footer-content">
       <p>&copy; 2026 <strong>Smart Search Engine with Autocomplete</strong> &bull; College Capstone Project</p>
-      <p class="footer-meta">Powered by C++17 Standard Library &bull; Zero External Dependencies</p>
+      <p class="footer-meta">std::c++17 &bull; WinSock2 Sockets &bull; Zero External Dependencies</p>
     </div>
   </footer>
 
