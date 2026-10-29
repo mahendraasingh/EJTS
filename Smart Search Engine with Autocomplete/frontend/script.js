@@ -115,37 +115,67 @@ function renderSuggestions(suggestions, prefix) {
   // Header hint in dropdown
   const hintItem = document.createElement('li');
   hintItem.className = 'dropdown-header-hint';
-  hintItem.innerHTML = `<span>// Trie prefix lookup [${suggestions.length} matches]</span><span>ESC to exit</span>`;
+  hintItem.innerHTML = `<span>// Context-Aware Autocomplete [${suggestions.length} suggestions]</span><span>ESC to exit</span>`;
   suggestionsDropdown.appendChild(hintItem);
 
-  suggestions.forEach((item, index) => {
+  suggestions.forEach((rawItem, index) => {
     const li = document.createElement('li');
     li.className = 'suggestion-item';
     li.setAttribute('role', 'option');
 
+    const itemText = (typeof rawItem === 'object' && rawItem !== null) ? rawItem.text : String(rawItem);
+    const itemType = (typeof rawItem === 'object' && rawItem !== null) ? (rawItem.type || 'phrase') : 'phrase';
+
+    // Badge styling mapping
+    let badgeClass = 'badge-phrase';
+    let badgeLabel = 'Phrase';
+    if (itemType === 'history') {
+      badgeClass = 'badge-history';
+      badgeLabel = 'History';
+    } else if (itemType === 'exact_phrase') {
+      badgeClass = 'badge-exact';
+      badgeLabel = 'Exact';
+    } else if (itemType === 'context_match') {
+      badgeClass = 'badge-context';
+      badgeLabel = 'Context';
+    } else if (itemType === 'word_completion') {
+      badgeClass = 'badge-trie';
+      badgeLabel = 'Trie';
+    }
+
     // Highlight matching prefix part in suggestion
-    let highlightedText = item;
-    const lowerItem = item.toLowerCase();
+    let highlightedText = escapeHtml(itemText);
+    const lowerItem = itemText.toLowerCase();
     const lowerPrefix = prefix.toLowerCase();
     if (lowerItem.startsWith(lowerPrefix)) {
-      const matchPart = item.substring(0, prefix.length);
-      const restPart = item.substring(prefix.length);
+      const matchPart = itemText.substring(0, prefix.length);
+      const restPart = itemText.substring(prefix.length);
       highlightedText = `<span class="suggestion-prefix">${escapeHtml(matchPart)}</span>${escapeHtml(restPart)}`;
-    } else {
-      highlightedText = escapeHtml(item);
     }
 
     li.innerHTML = `
-      <div style="display:flex; align-items:center; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
         <span style="color:var(--syn-function); font-family:var(--font-mono);">&gt;</span>
-        <span>${highlightedText}</span>
+        <span class="suggestion-text" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${highlightedText}</span>
       </div>
-      <span class="suggestion-badge">Trie::node</span>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="suggestion-badge ${badgeClass}">${badgeLabel}</span>
+        <button class="refine-btn" title="Refine query in search box" aria-label="Refine query">&#8598;</button>
+      </div>
     `;
 
     li.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.refine-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInput.value = itemText;
+        clearInputBtn.style.display = 'block';
+        searchInput.focus();
+        fetchSuggestions(itemText);
+        return;
+      }
       e.preventDefault();
-      selectSuggestion(item);
+      selectSuggestion(itemText);
     });
 
     suggestionsDropdown.appendChild(li);
@@ -189,7 +219,9 @@ searchInput.addEventListener('keydown', (e) => {
   } else if (e.key === 'Enter') {
     e.preventDefault();
     if (activeSuggestionIndex >= 0 && activeSuggestionIndex < currentSuggestions.length) {
-      selectSuggestion(currentSuggestions[activeSuggestionIndex]);
+      const selected = currentSuggestions[activeSuggestionIndex];
+      const selectedText = (typeof selected === 'object' && selected !== null) ? selected.text : selected;
+      selectSuggestion(selectedText);
     } else {
       hideSuggestions();
       executeSearch(searchInput.value);
@@ -203,7 +235,9 @@ function updateActiveSuggestion(items) {
   items.forEach((item, idx) => {
     if (idx === activeSuggestionIndex) {
       item.classList.add('active');
-      searchInput.value = currentSuggestions[idx];
+      const selected = currentSuggestions[idx];
+      const selectedText = (typeof selected === 'object' && selected !== null) ? selected.text : selected;
+      searchInput.value = selectedText;
     } else {
       item.classList.remove('active');
     }
@@ -334,6 +368,15 @@ function renderCards(resultsList) {
       return `<button class="kw-tag" data-kw="${escapeHtml(kw)}">#${escapeHtml(kw)}</button>`;
     }).join('');
 
+    const docUrl = doc.url || `https://docs.smartsearch.internal/ref/doc_${doc.id}`;
+    let displayUrl = docUrl;
+    try {
+      const parsed = new URL(docUrl);
+      displayUrl = `${parsed.hostname} › ${parsed.pathname.split('/').filter(Boolean).slice(0, 2).join(' › ')}`;
+    } catch (_) {
+      displayUrl = docUrl;
+    }
+
     card.innerHTML = `
       <div class="card-terminal-bar">
         <div class="terminal-dots">
@@ -345,8 +388,16 @@ function renderCards(resultsList) {
         <span>rank: #${index + 1}</span>
       </div>
       <div class="card-content-body">
+        <div class="card-url-breadcrumb">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayUrl)}</a>
+          <span class="category-pill">${escapeHtml(doc.category || 'Computer Science')}</span>
+        </div>
         <div class="card-top">
-          <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
+          <a href="${escapeHtml(docUrl)}" target="_blank" rel="noopener noreferrer" class="card-title-link">
+            <h3 class="card-title">${item.highlightedTitle || escapeHtml(doc.title)}</h3>
+            <svg class="ext-link-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
           <div class="score-badge-wrap">
             <span class="score-pill">${scoreFormatted} pts</span>
             <div class="score-bar-track" title="Relevance: ${scorePercent}%">
