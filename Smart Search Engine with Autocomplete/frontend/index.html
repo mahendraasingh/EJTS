@@ -39,14 +39,27 @@
   </header>
 
   <main class="main-content container">
-    <!-- Hero Section with Google/Safari Style Search -->
+    <!-- Hero Section with Matrix Code Rain and Programming Language Brand -->
     <section class="hero-section">
-      <div class="brand-center">
-        <h1 class="brand-logo-title">
-          <span class="logo-b">S</span><span class="logo-r">m</span><span class="logo-y">a</span><span class="logo-b">r</span><span class="logo-g">t</span><span class="logo-r">S</span><span class="logo-b">earch</span>
-        </h1>
+      <div class="matrix-hero-card">
+        <!-- Matrix Falling Digital Code Rain Canvas -->
+        <canvas id="matrixCanvas" class="matrix-canvas" aria-hidden="true"></canvas>
+
+        <div class="matrix-content-overlay">
+          <div class="matrix-code-chip">
+            <span class="matrix-dot"></span>
+            <code>std::search&lt;C++17&gt;</code>
+          </div>
+
+          <h1 class="brand-logo-title matrix-title" id="matrixTitle" title="Click or hover to scramble code" data-value="SmartSearch">
+            <span class="code-operator">&lt;</span><span class="matrix-core-text" id="matrixCoreText">SmartSearch</span><span class="code-operator"> /&gt;</span>
+          </h1>
+
+          <p class="brand-tagline matrix-tagline">
+            <code>// real_time_ir_engine &bull; trie_autocomplete &bull; inverted_index</code>
+          </p>
+        </div>
       </div>
-      <p class="brand-tagline">Real-time instant search across computing &amp; algorithms</p>
 
       <!-- Google Chrome / Safari Style Omnibox Search Bar -->
       <div class="search-wrapper">

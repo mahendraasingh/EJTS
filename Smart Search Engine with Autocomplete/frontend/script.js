@@ -587,4 +587,113 @@ window.addEventListener('DOMContentLoaded', () => {
     // Focus search bar so user can start typing in real time immediately
     searchInput.focus();
   }
+
+  // Launch Matrix Digital Rain & Code Scramble
+  initMatrixRain();
+  initTextScramble();
 });
+
+// ==========================================================================
+// Matrix Code Rain Engine (Falling digital characters as seen in photo)
+// ==========================================================================
+function initMatrixRain() {
+  const canvas = document.getElementById('matrixCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    const parent = canvas.parentElement;
+    if (parent) {
+      canvas.width = parent.offsetWidth;
+      canvas.height = parent.offsetHeight;
+    }
+  }
+  resize();
+
+  // Matrix symbols: binary, programming language operators, C++ keywords
+  const matrixChars = '01{}<>/*+=;:[].&|!~$#%^?C++std::vector<int>TrieNode*ptr010101XYZ';
+  const fontSize = 13;
+  let columns = Math.max(10, Math.floor(canvas.width / fontSize));
+  let drops = Array(columns).fill(1);
+
+  window.addEventListener('resize', () => {
+    resize();
+    columns = Math.max(10, Math.floor(canvas.width / fontSize));
+    drops = Array(columns).fill(1);
+  });
+
+  function draw() {
+    // Translucent black overlay creating the phosphor trail
+    ctx.fillStyle = 'rgba(3, 10, 6, 0.14)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = `${fontSize}px 'JetBrains Mono', 'Fira Code', monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Bright white-green tip, glowing matrix green trail
+      if (Math.random() > 0.88) {
+        ctx.fillStyle = '#ffffff';
+      } else {
+        ctx.fillStyle = '#00ff66';
+      }
+      ctx.fillText(char, x, y);
+
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 33);
+}
+
+// ==========================================================================
+// Matrix Hacker Text Scramble Effect
+// ==========================================================================
+function initTextScramble() {
+  const textEl = document.getElementById('matrixCoreText');
+  const titleEl = document.getElementById('matrixTitle');
+  if (!textEl || !titleEl) return;
+
+  const targetText = 'SmartSearch';
+  const glyphs = '01{}<>/*+=;:[].&|!~$#%^?C++std::';
+  let isScrambling = false;
+
+  function scramble() {
+    if (isScrambling) return;
+    isScrambling = true;
+
+    let iteration = 0;
+    const maxIterations = targetText.length * 3;
+    const interval = setInterval(() => {
+      textEl.textContent = targetText
+        .split('')
+        .map((letter, index) => {
+          if (index < iteration / 3) {
+            return targetText[index];
+          }
+          return glyphs[Math.floor(Math.random() * glyphs.length)];
+        })
+        .join('');
+
+      if (iteration >= maxIterations) {
+        clearInterval(interval);
+        textEl.textContent = targetText;
+        isScrambling = false;
+      }
+      iteration++;
+    }, 28);
+  }
+
+  // Trigger on initial page load
+  setTimeout(scramble, 300);
+
+  // Trigger on hover or click
+  titleEl.addEventListener('mouseenter', scramble);
+  titleEl.addEventListener('click', scramble);
+}

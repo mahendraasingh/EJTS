@@ -184,44 +184,127 @@ body {
 }
 
 /* ==========================================================================
-   Hero Section & Clean Logo
+   Matrix Code Rain & Programming Language Brand Hero
    ========================================================================== */
 .hero-section {
   text-align: center;
-  padding: 56px 0 20px;
+  padding: 30px 0 20px;
   max-width: 760px;
   margin: 0 auto;
 }
 
-.brand-center {
-  margin-bottom: 8px;
+.matrix-hero-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 42px 24px 30px;
+  margin-bottom: 24px;
+  background: radial-gradient(circle at center, #07150c 0%, #030a06 100%);
+  border: 1.5px solid rgba(0, 255, 102, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 255, 102, 0.15), inset 0 0 50px rgba(0, 255, 102, 0.06);
 }
 
-.brand-logo-title {
-  font-size: 3.8rem;
-  font-weight: 500;
-  letter-spacing: -0.04em;
+[data-theme="light"] .matrix-hero-card {
+  background: radial-gradient(circle at center, #06190e 0%, #020d06 100%);
+  border: 1.5px solid rgba(0, 255, 102, 0.35);
+  box-shadow: 0 10px 36px rgba(0, 255, 102, 0.22);
+}
+
+.matrix-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.68;
+  z-index: 1;
+}
+
+.matrix-content-overlay {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.matrix-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 255, 102, 0.12);
+  border: 1px solid rgba(0, 255, 102, 0.45);
+  color: #00ff66;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(4px);
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.5);
+}
+
+.matrix-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ff66;
+  box-shadow: 0 0 10px #00ff66;
+  animation: pulseDotAnim 1.2s infinite ease-in-out;
+}
+
+.matrix-title {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.1;
-  display: inline-block;
+  color: #00ff66;
+  text-shadow: 
+    0 0 6px #00ff66,
+    0 0 18px #00ff66,
+    0 0 35px rgba(0, 255, 102, 0.85),
+    0 0 70px rgba(0, 255, 102, 0.45);
   user-select: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* Google Style Brand Letter Colors */
-.logo-b { color: #4285f4; }
-.logo-r { color: #ea4335; }
-.logo-y { color: #fbbc05; }
-.logo-g { color: #34a853; }
+.matrix-title:hover {
+  transform: scale(1.02);
+  text-shadow: 
+    0 0 8px #ffffff,
+    0 0 25px #00ff66,
+    0 0 50px #00ff66,
+    0 0 100px rgba(0, 255, 102, 0.9);
+}
 
-[data-theme="dark"] .logo-b { color: #8ab4f8; }
-[data-theme="dark"] .logo-r { color: #f28b82; }
-[data-theme="dark"] .logo-y { color: #fdd663; }
-[data-theme="dark"] .logo-g { color: #81c995; }
+.code-operator {
+  color: #38bdf8; /* Cyan C++ syntax highlight */
+  text-shadow: 0 0 12px #38bdf8;
+  font-weight: 500;
+}
 
-.brand-tagline {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-bottom: 28px;
-  font-weight: 400;
+.matrix-core-text {
+  color: #00ff66;
+  display: inline-block;
+  min-width: 10ch;
+}
+
+.matrix-tagline {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: rgba(0, 255, 102, 0.9);
+  margin-top: 14px;
+  margin-bottom: 0;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
 }
 
 /* ==========================================================================
