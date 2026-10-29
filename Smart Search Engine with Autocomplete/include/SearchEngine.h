@@ -65,7 +65,7 @@ public:
     /**
      * @brief Searches documents matching the full query and ranks them by relevance.
      */
-    std::vector<SearchResult> search(const std::string& query, int maxResults = 10);
+    std::vector<SearchResult> search(const std::string& query, int maxResults = 10, bool recordHistory = true);
 
     /**
      * @brief Context-aware autocomplete returning rich suggestion objects.

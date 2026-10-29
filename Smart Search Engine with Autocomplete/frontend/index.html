@@ -15,57 +15,36 @@
   <div class="ambient-glow glow-top"></div>
   <div class="ambient-glow glow-bottom"></div>
 
-  <header class="site-header">
-    <div class="container header-container">
-      <a href="/" class="brand">
-        <div class="brand-icon">
-          <span>&gt;_</span>
-        </div>
-        <div>
-          <h1 class="brand-title"><span class="prompt-prefix">std::</span>search<span class="gradient-text">&lt;Trie&gt;</span></h1>
-          <p class="brand-subtitle">// C++17 Inverted Index &amp; Autocomplete Engine</p>
-        </div>
-      </a>
-
-      <div class="header-actions">
-        <div class="header-badges">
-          <span class="badge"><span class="dot"></span> C++17 Engine</span>
-          <span class="badge">O(L) Trie</span>
-          <span class="badge">Inverted Index</span>
-        </div>
-
-        <!-- Light / Dark Mode Toggle Button -->
-        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
-          <!-- Moon Icon (for dark mode) -->
-          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-          <!-- Sun Icon (for light mode) -->
-          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </header>
+  <!-- Minimal Floating Theme Toggle (Top Right) -->
+  <div class="top-nav-bar">
+    <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light / Dark Theme" title="Switch Theme (Dark / Light)">
+      <!-- Moon Icon (for dark mode) -->
+      <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      <!-- Sun Icon (for light mode) -->
+      <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+    </button>
+  </div>
 
   <main class="main-content container">
-    <!-- Hero Section with Centered Search -->
+    <!-- Hero Section with Centered Google-Like Search -->
     <section class="hero-section">
-      <div class="hero-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-        Algorithms &amp; Information Retrieval Engine
+      <div class="brand-center">
+        <div class="brand-logo-icon">&gt;_</div>
+        <h1 class="brand-logo-title">Smart<span class="gradient-text">Search</span></h1>
       </div>
-      <h2 class="hero-headline">Smart Search with <span class="gradient-text">Trie Autocomplete</span></h2>
-      <p class="hero-desc">Sub-millisecond prefix retrieval powered by a pure C++ Trie, coupled with inverted indexing and multi-factor relevance ranking.</p>
+      <p class="brand-tagline">Real-Time Context-Aware Search &bull; C++17 Information Retrieval Engine</p>
 
       <div class="search-wrapper">
         <div class="search-box">
@@ -73,7 +52,7 @@
           <input 
             type="text" 
             id="searchInput" 
-            placeholder="query.search(&quot;trie&quot;, &quot;c++&quot;, &quot;algorithms&quot;)..." 
+            placeholder="Type to search in real time (e.g. machine learning, c++ data structures)..." 
             autocomplete="off" 
             spellcheck="false"
             aria-label="Search query"
@@ -81,7 +60,7 @@
           <span class="kbd-shortcut" title="Press / or Ctrl+K to focus search bar">Ctrl K</span>
           <button id="clearInputBtn" class="clear-btn" aria-label="Clear input" style="display: none;">&times;</button>
           <button id="searchBtn" class="primary-btn">
-            <span>Execute</span>
+            <span>Search</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -131,7 +110,7 @@
         </div>
         <div class="filter-group">
           <span class="filter-label">Corpus:</span>
-          <span style="color:var(--text-accent); font-weight:600;">25 Documents Indexed</span>
+          <span style="color:var(--text-accent); font-weight:600;">35+ Documents Indexed</span>
         </div>
       </div>
     </section>
@@ -140,11 +119,12 @@
     <section id="resultsSection" class="results-section">
       <div class="results-header" id="resultsHeader" style="display: none;">
         <div class="results-stats">
-          <span id="resultsCount">0</span> matches returned for <span id="resultsQuery" class="query-highlight">""</span>
-          <span id="resultsLatency" class="results-latency">0.4ms</span>
+          <span class="live-pulse-badge"><span class="pulse-dot"></span> Live Instant</span>
+          <span id="resultsCount">0</span> matches for <span id="resultsQuery" class="query-highlight">""</span>
+          <span id="resultsLatency" class="results-latency">0.2ms</span>
         </div>
-        <div class="ranking-formula-hint" title="Score = Exact Match (50) + Title (20/w) + Keywords (15/w) + Desc (5/w) + Popularity Bonus">
-          Score = Exact(50) + Title(20) + Keywords(15) + Desc(5) + Pop(0.2x)
+        <div class="ranking-formula-hint" title="Score = Exact Full Title (140) + Phrase Title (85) + Title Term (25/w) + Term Coverage (up to 70) + Proximity (25) + Popularity">
+          Score = Title(140) + Phrase(85) + Coverage(70) + Proximity(25)
         </div>
       </div>
 

@@ -127,7 +127,9 @@ std::string HttpServer::routeRequest(const std::string& method, const std::strin
 
     } else if (path == "/api/search" && method == "GET") {
         std::string query = getQueryParam(queryString, "q");
-        auto results = searchEngine.search(query, 10);
+        std::string liveParam = getQueryParam(queryString, "live");
+        bool isLive = (liveParam == "1" || liveParam == "true");
+        auto results = searchEngine.search(query, 10, !isLive);
 
         std::ostringstream json;
         json << "{\"query\":\"" << query << "\",\"count\":" << results.size() << ",\"results\":[";

@@ -244,16 +244,55 @@ function updateActiveSuggestion(items) {
   });
 }
 
+// ==========================================================================
+// Real-Time Live Search & Autocomplete Pipeline
+// ==========================================================================
+let suggestionTimer = null;
+let liveSearchTimer = null;
+let liveSearchRequestId = 0;
+
+function clearResults() {
+  resultsContainer.innerHTML = '';
+  resultsHeader.style.display = 'none';
+  loadingIndicator.style.display = 'none';
+  emptyState.style.display = 'none';
+  currentResults = [];
+}
+
 searchInput.addEventListener('input', () => {
   const query = searchInput.value;
   clearInputBtn.style.display = query.length > 0 ? 'block' : 'none';
-  debounce(() => fetchSuggestions(query), 150)();
+
+  if (!query || query.trim().length === 0) {
+    clearTimeout(suggestionTimer);
+    clearTimeout(liveSearchTimer);
+    liveSearchRequestId++;
+    hideSuggestions();
+    clearResults();
+    return;
+  }
+
+  // 1. Fast Context-Aware Autocomplete (40ms debounce)
+  clearTimeout(suggestionTimer);
+  suggestionTimer = setTimeout(() => {
+    fetchSuggestions(query);
+  }, 40);
+
+  // 2. Instant Real-Time Search (75ms debounce)
+  clearTimeout(liveSearchTimer);
+  liveSearchTimer = setTimeout(() => {
+    executeLiveSearch(query);
+  }, 75);
 });
 
 clearInputBtn.addEventListener('click', () => {
   searchInput.value = '';
   clearInputBtn.style.display = 'none';
+  clearTimeout(suggestionTimer);
+  clearTimeout(liveSearchTimer);
+  liveSearchRequestId++;
   hideSuggestions();
+  clearResults();
   searchInput.focus();
 });
 
@@ -270,18 +309,46 @@ searchBtn.addEventListener('click', () => {
   executeSearch(searchInput.value);
 });
 
+async function executeLiveSearch(query) {
+  const cleanQuery = query.trim();
+  if (!cleanQuery) return;
+
+  const currentReqId = ++liveSearchRequestId;
+  const startTime = performance.now();
+
+  try {
+    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(cleanQuery)}&live=1`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Guard against stale out-of-order responses
+    if (currentReqId !== liveSearchRequestId) return;
+
+    const duration = (performance.now() - startTime).toFixed(1);
+    currentResults = data.results || [];
+    renderSearchResults(data, duration, true);
+  } catch (err) {
+    if (currentReqId === liveSearchRequestId) {
+      console.warn('[LiveSearch] Live search skipped:', err);
+    }
+  }
+}
+
 async function executeSearch(query) {
   if (!query || query.trim().length === 0) {
     return;
   }
 
+  clearTimeout(suggestionTimer);
+  clearTimeout(liveSearchTimer);
+  const currentReqId = ++liveSearchRequestId;
+
   hideSuggestions();
   const cleanQuery = query.trim();
+  searchInput.value = cleanQuery;
+  clearInputBtn.style.display = 'block';
 
-  // Show loading indicator
   loadingIndicator.style.display = 'block';
-  resultsContainer.innerHTML = '';
-  resultsHeader.style.display = 'none';
   emptyState.style.display = 'none';
 
   const startTime = performance.now();
@@ -292,9 +359,11 @@ async function executeSearch(query) {
     const data = await res.json();
     const duration = (performance.now() - startTime).toFixed(1);
 
+    if (currentReqId !== liveSearchRequestId) return;
+
     loadingIndicator.style.display = 'none';
     currentResults = data.results || [];
-    renderSearchResults(data, duration);
+    renderSearchResults(data, duration, false);
 
     // Refresh history and popular pills
     loadHistory();
@@ -333,7 +402,7 @@ if (sortSelect) {
   });
 }
 
-function renderSearchResults(data, latencyMs) {
+function renderSearchResults(data, latencyMs, isLive = false) {
   resultsHeader.style.display = 'flex';
   resultsCount.textContent = data.count || 0;
   resultsQuery.textContent = `"${data.query}"`;
@@ -341,11 +410,24 @@ function renderSearchResults(data, latencyMs) {
     resultsLatency.textContent = `${latencyMs}ms`;
   }
 
+  const liveBadge = resultsHeader.querySelector('.live-pulse-badge');
+  if (liveBadge) {
+    if (isLive) {
+      liveBadge.innerHTML = '<span class="pulse-dot"></span> Live Instant';
+      liveBadge.style.opacity = '1';
+    } else {
+      liveBadge.innerHTML = '<span class="pulse-dot" style="animation:none; opacity:0.8;"></span> Results';
+      liveBadge.style.opacity = '0.9';
+    }
+  }
+
   if (!data.results || data.results.length === 0) {
     emptyState.style.display = 'block';
+    resultsContainer.innerHTML = '';
     return;
   }
 
+  emptyState.style.display = 'none';
   const sorted = sortResults(data.results, sortSelect ? sortSelect.value : 'relevance');
   renderCards(sorted);
 }
@@ -519,8 +601,15 @@ window.addEventListener('DOMContentLoaded', () => {
   loadPopular();
   loadHistory();
 
-  // Execute a default showcase search to impress visitors on first load
-  setTimeout(() => {
-    executeSearch('programming');
-  }, 250);
+  // Check for URL query parameter (?q=...) or start clean for real-time typing
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if (initialQuery && initialQuery.trim().length > 0) {
+    searchInput.value = initialQuery.trim();
+    clearInputBtn.style.display = 'block';
+    executeSearch(initialQuery.trim());
+  } else {
+    // Focus search bar so user can start typing in real time immediately
+    searchInput.focus();
+  }
 });

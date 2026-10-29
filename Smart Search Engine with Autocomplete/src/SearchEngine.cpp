@@ -250,7 +250,7 @@ double SearchEngine::calculateScore(const Document& doc, const std::string& rawQ
     return score;
 }
 
-std::vector<SearchResult> SearchEngine::search(const std::string& query, int maxResults) {
+std::vector<SearchResult> SearchEngine::search(const std::string& query, int maxResults, bool recordHistory) {
     std::vector<SearchResult> results;
     std::string cleanQuery = Trie::normalize(query);
 
@@ -259,9 +259,11 @@ std::vector<SearchResult> SearchEngine::search(const std::string& query, int max
     }
 
     // 1. Record search query in history, Trie, and PhraseIndex
-    historyManager.recordSearch(cleanQuery);
-    autocompleteTrie.incrementFrequency(cleanQuery, 2);
-    phraseIndex.addPhrase(cleanQuery, 35); // Engine learns from user queries!
+    if (recordHistory) {
+        historyManager.recordSearch(cleanQuery);
+        autocompleteTrie.incrementFrequency(cleanQuery, 2);
+        phraseIndex.addPhrase(cleanQuery, 35); // Engine learns from user queries!
+    }
 
     // 2. Tokenize query
     auto queryTokens = tokenize(cleanQuery);
