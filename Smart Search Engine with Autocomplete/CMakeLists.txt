@@ -10,6 +10,7 @@ include_directories(include)
 set(ENGINE_SOURCES
     src/Document.cpp
     src/Trie.cpp
+    src/PhraseIndex.cpp
     src/DocumentManager.cpp
     src/HistoryManager.cpp
     src/SearchEngine.cpp
