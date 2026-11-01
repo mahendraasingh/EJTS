@@ -4,7 +4,6 @@ import {
   ShieldAlert,
   Server,
   AlertTriangle,
-  CheckCircle2,
   TrendingUp,
   Activity,
   ArrowUpRight,
@@ -326,7 +325,7 @@ export const Dashboard: React.FC = () => {
             {summary?.critical_vulnerabilities ?? 0}
           </div>
           <div className="text-[10px] text-red-400/80 mt-1 font-mono">
-            SLA: Immediate 7-day patch
+            Priority: Immediate Attention
           </div>
         </div>
 
@@ -340,7 +339,7 @@ export const Dashboard: React.FC = () => {
             {summary?.high_vulnerabilities ?? 0}
           </div>
           <div className="text-[10px] text-orange-400/80 mt-1 font-mono">
-            SLA: 15-day remediation
+            Priority: High Escalation
           </div>
         </div>
 
@@ -425,7 +424,7 @@ export const Dashboard: React.FC = () => {
                   <SlidersHorizontal className="w-3.5 h-3.5" /> 3. Smart Formula
                 </div>
                 <p className="text-[11px] text-zinc-400 mt-1">
-                  Outputs an objective 0–100 score to guide remediation SLAs.
+                  Outputs an objective 0–100 score to guide risk prioritization.
                 </p>
               </div>
             </div>
@@ -722,54 +721,54 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Actionable Remediation Guidance */}
+            {/* Threat Intelligence & Exposure Insights */}
             <div className="p-5 rounded-2xl bg-[#09090b] border border-[#27272a] shadow-lg flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-[#27272a]">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                    SLA Remediation Playbook
+                    <Zap className="w-4 h-4 text-cyan-400" />
+                    Threat Intelligence & Attack Surface
                   </h3>
-                  <Link to="/remediation" className="text-xs text-cyan-400 hover:underline">
-                    Tasks &rarr;
+                  <Link to="/risk-prioritization" className="text-xs text-cyan-400 hover:underline">
+                    Prioritization Matrix &rarr;
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <div className="text-[11px] font-bold text-red-400">Critical SLA: 7 Days</div>
+                    <div className="text-[11px] font-bold text-red-400">CISA KEV Weaponized</div>
                     <div className="text-xl font-black font-mono text-red-300 mt-1">
-                      {summary?.critical_vulnerabilities ?? 0} Items
+                      {topRisks.filter(v => v.kev_status).length} Active
                     </div>
                     <p className="text-[10px] text-red-400/80 mt-1">
-                      Exploits in the wild or high EPSS on critical assets.
+                      Confirmed active exploitation in the wild.
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
-                    <div className="text-[11px] font-bold text-orange-400">High SLA: 15 Days</div>
-                    <div className="text-xl font-black font-mono text-orange-300 mt-1">
-                      {summary?.high_vulnerabilities ?? 0} Items
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <div className="text-[11px] font-bold text-amber-400">Public Exploit Available</div>
+                    <div className="text-xl font-black font-mono text-amber-300 mt-1">
+                      {topRisks.filter(v => v.exploit_available).length} Items
                     </div>
-                    <p className="text-[10px] text-orange-400/80 mt-1">
-                      Elevated exposure requiring expedited patching.
+                    <p className="text-[10px] text-amber-400/80 mt-1">
+                      Known PoC or exploit code published publicly.
                     </p>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[#121215] border border-[#27272a] mt-3 text-xs text-zinc-400 leading-relaxed">
-                  <strong className="text-zinc-200">Recommended Next Step:</strong> Review Top #1 CVE (
-                  <span className="text-cyan-400 font-mono">{topRisks[0]?.cve_id}</span>) and assign an emergency patch ticket to DevOps.
+                  <strong className="text-zinc-200">Priority Recommendation:</strong> Triage top-ranked vulnerability (
+                  <span className="text-cyan-400 font-mono">{topRisks[0]?.cve_id}</span>) immediately based on multi-factor blast radius.
                 </div>
               </div>
 
               <div className="pt-4 border-t border-[#27272a] flex items-center justify-between mt-4">
-                <span className="text-xs text-zinc-400">SLA Tracking Active</span>
+                <span className="text-xs text-zinc-400">Multi-Factor Prioritization Model</span>
                 <Link
-                  to="/reports"
+                  to="/risk-prioritization"
                   className="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition-all shadow-md shadow-cyan-500/20 flex items-center gap-1.5"
                 >
-                  Generate Executive Briefing <ArrowUpRight className="w-3.5 h-3.5" />
+                  Explore Risk Matrix <ArrowUpRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>

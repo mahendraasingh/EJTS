@@ -5,9 +5,6 @@ import {
   ShieldAlert,
   Server,
   SlidersHorizontal,
-  CheckCircle2,
-  FileBarChart2,
-  Settings,
   ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,9 +17,6 @@ export const Sidebar: React.FC = () => {
     { name: 'Vulnerabilities', path: '/vulnerabilities', icon: ShieldAlert },
     { name: 'Assets & Exposure', path: '/assets', icon: Server },
     { name: 'Risk Prioritization', path: '/risk-prioritization', icon: SlidersHorizontal },
-    { name: 'Remediation SLA', path: '/remediation', icon: CheckCircle2 },
-    { name: 'Executive Reports', path: '/reports', icon: FileBarChart2 },
-    { name: 'Engine Weights', path: '/settings', icon: Settings },
   ];
 
   return (
