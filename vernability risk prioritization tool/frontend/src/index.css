@@ -6,33 +6,35 @@
   color-scheme: dark;
 }
 
+/* Base Body Styles */
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #070c18;
-  color: #f1f5f9;
+  background-color: #000000;
+  color: #f4f4f5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom Scrollbar for cyber theme */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0c1322;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2e4f;
+  background: #3f3f46;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2a416d;
+  background: #52525b;
 }
 
-/* Glowing cyber borders & badges */
+/* Glowing Accent Badges */
 .glow-critical {
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
 }
@@ -42,9 +44,113 @@ body {
 }
 
 .glow-cyan {
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
 }
 
 .glow-purple {
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
+}
+
+/* -------------------------------------------------------------------------
+   DARK MODE OVERRIDES (Pure Deep Black & Graphite Zinc - Blue Removed)
+   ------------------------------------------------------------------------- */
+html.dark body {
+  background-color: #000000 !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark .bg-\[\#070c18\] {
+  background-color: #000000 !important;
+}
+
+html.dark .bg-\[\#0a1120\],
+html.dark .bg-\[\#0c1322\] {
+  background-color: #09090b !important;
+}
+
+html.dark .bg-\[\#0c1427\],
+html.dark .bg-\[\#111c33\],
+html.dark .bg-\[\#0e172a\] {
+  background-color: #121215 !important;
+}
+
+html.dark .bg-\[\#090f1d\] {
+  background-color: #0a0a0d !important;
+}
+
+html.dark .border-\[\#1a2744\],
+html.dark .border-\[\#1e2e4f\],
+html.dark .border-\[\#1d2d4c\],
+html.dark .border-\[\#17243e\],
+html.dark .border-\[\#1b2b48\] {
+  border-color: #27272a !important;
+}
+
+/* -------------------------------------------------------------------------
+   BRIGHT / LIGHT MODE OVERRIDES
+   ------------------------------------------------------------------------- */
+html.bright {
+  color-scheme: light;
+}
+
+html.bright body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.bright .bg-\[\#070c18\],
+html.bright .bg-\[\#0a1120\],
+html.bright .bg-\[\#0c1322\],
+html.bright .bg-\[\#0c1427\],
+html.bright .bg-\[\#0e172a\],
+html.bright .bg-\[\#111c33\],
+html.bright .bg-\[\#090f1d\] {
+  background-color: #ffffff !important;
+}
+
+html.bright .border-\[\#1a2744\],
+html.bright .border-\[\#1e2e4f\],
+html.bright .border-\[\#1d2d4c\],
+html.bright .border-\[\#17243e\],
+html.bright .border-\[\#1b2b48\] {
+  border-color: #e2e8f0 !important;
+}
+
+html.bright .text-white,
+html.bright .text-slate-100,
+html.bright .text-slate-200 {
+  color: #0f172a !important;
+}
+
+html.bright .text-slate-400,
+html.bright .text-slate-500 {
+  color: #64748b !important;
+}
+
+html.bright aside {
+  background-color: #ffffff !important;
+  border-right-color: #e2e8f0 !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
+}
+
+html.bright header {
+  background-color: #ffffff !important;
+  border-bottom-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+html.bright table thead {
+  background-color: #f1f5f9 !important;
+}
+
+html.bright table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+html.bright input,
+html.bright select,
+html.bright textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,19 +9,19 @@ export default {
     extend: {
       colors: {
         cyber: {
-          darkest: '#070c18',
-          dark: '#0c1322',
-          card: '#111c33',
-          border: '#1e2e4f',
-          hover: '#192847',
-          accent: '#38bdf8',
-          purple: '#a855f7',
+          darkest: '#000000',
+          dark: '#09090b',
+          card: '#111114',
+          border: '#27272a',
+          hover: '#18181b',
+          accent: '#06b6d4',
+          purple: '#8b5cf6',
         },
         risk: {
           critical: '#ef4444',
           high: '#f97316',
           medium: '#eab308',
-          low: '#22c55e',
+          low: '#10b981',
         }
       }
     },

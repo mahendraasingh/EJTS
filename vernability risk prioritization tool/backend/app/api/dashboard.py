@@ -74,7 +74,8 @@ def get_risk_trends(
     high = db.query(Vulnerability).filter(Vulnerability.risk_priority == RiskPriority.HIGH).count()
     med = db.query(Vulnerability).filter(Vulnerability.risk_priority == RiskPriority.MEDIUM).count()
     low = db.query(Vulnerability).filter(Vulnerability.risk_priority == RiskPriority.LOW).count()
-    avg = db.query(func.avg(Vulnerability.risk_score)).scalar() or 50.0
+    total_count = crit + high + med + low
+    avg = float(db.query(func.avg(Vulnerability.risk_score)).scalar() or 0.0) if total_count > 0 else 0.0
 
     points = []
     multipliers = [0.82, 0.88, 0.91, 0.95, 0.92, 0.97, 1.00]
@@ -87,7 +88,7 @@ def get_risk_trends(
             high=max(0, int(high * m)),
             medium=max(0, int(med * m)),
             low=max(0, int(low * m)),
-            avg_score=round(avg * m, 2)
+            avg_score=round(avg * m, 2) if total_count > 0 else 0.0
         ))
     return points
 

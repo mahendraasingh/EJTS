@@ -24,11 +24,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
-      localStorage.removeItem('vrpt_token');
-      localStorage.removeItem('vrpt_user');
-      window.location.href = '/login';
-    }
+    console.error("API error:", error);
     return Promise.reject(error);
   }
 );
@@ -118,6 +114,14 @@ export const api = {
       const res = await apiClient.post('/import/csv', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      return res.data;
+    },
+    resetData: async () => {
+      const res = await apiClient.post<{ status: string; message: string }>('/import/reset');
+      return res.data;
+    },
+    seedDemo: async () => {
+      const res = await apiClient.post<any>('/import/seed-demo');
       return res.data;
     },
     sampleCsvUrl: `${API_BASE_URL}/import/sample-csv`,
