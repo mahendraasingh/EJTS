@@ -4,10 +4,10 @@ echo  Starting Vulnerability Risk Prioritization Tool (VRPT)
 echo ========================================================
 
 echo [1/2] Launching FastAPI Backend on http://127.0.0.1:8000 ...
-start "VRPT Backend" cmd /k "cd backend && python seed_data.py && uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
+start "VRPT Backend" cmd /k "cd /d "%~dp0backend" && python seed_data.py && uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
 
 echo [2/2] Launching React Vite Frontend on http://localhost:5173 ...
-start "VRPT Frontend" cmd /k "cd frontend && npm run dev"
+start "VRPT Frontend" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
 echo.
 echo ========================================================
