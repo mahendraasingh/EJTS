@@ -1,0 +1,8 @@
+cve_id,title,description,cvss_score,cwe_id,affected_software,affected_version,asset_name,ip_address,operating_system,epss_score,kev_status,exploit_available
+CVE-2024-3094,XZ Utils Backdoor Liblzma,Malicious code discovered in upstream tarballs of xz,10.0,CWE-506,xz-utils,5.6.0,Edge-API-Gateway-Primary,198.51.100.10,Linux Ubuntu 22.04 LTS,0.95,true,true
+CVE-2023-44487,HTTP/2 Rapid Reset Attack,High volume request cancellation DDoS flaw,7.5,CWE-400,Nginx,1.24.0,Main-Storefront-Web-App,198.51.100.35,Alpine Linux 3.19 (K8s),0.88,true,true
+CVE-2024-21626,runc Container Escape File Descriptor Leak,Internal file descriptor leakage in runc allows container escape,8.6,CWE-403,runc,1.1.11,Microservice-Mesh-Envoy,10.200.3.44,Container Linux,0.74,true,true
+CVE-2023-38606,Apple Kernel State Confusion,Flaw allows app to modify sensitive kernel state,5.5,CWE-362,macOS Kernel,13.4,Lead-SecOps-Analyst-MacBook,10.50.4.101,macOS Sonoma 14.4,0.15,false,false
+CVE-2024-3400,Palo Alto PAN-OS Command Injection,Arbitrary command injection in GlobalProtect feature,10.0,CWE-77,PAN-OS GlobalProtect,10.2.9,Customer-Auth-Vault-Cluster,198.51.100.22,Red Hat Enterprise Linux 9,0.96,true,true
+CVE-2023-22515,Atlassian Confluence Privilege Escalation,Allows unauthenticated attacker to create admin accounts,9.8,CWE-287,Confluence Server,8.5.1,CI-CD-Jenkins-Master,10.150.1.10,Debian 11,0.92,true,true
+CVE-2023-28252,Windows CLFS Driver Elevation of Privilege,Common Log File System driver flaw exploited by ransomware,7.8,CWE-787,Windows Server CLFS,2022,Corporate-LDAP-ActiveDirectory,10.100.0.10,Windows Server 2022 Datacenter,0.85,true,true
