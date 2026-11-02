@@ -1,10 +1,4 @@
-# 🛡️ Vulnerability Risk Prioritization Tool (VRPT)
-
-Yeh ek **Enterprise Cybersecurity Risk Scoring aur Threat Intelligence Platform** hai. Iska main kaam organizations ke digital assets aur systems me aane wali vulnerabilities (CVEs) ko analyze karke yeh batana hai ki **kaunsi vulnerability sabse pehle fix karni chahiye** (Risk-based Prioritization), taaki security teams ka time aur resources sahi jagah use ho sake.
-
----
-
-## 📂 1. Backend Overview (Files & Folders Structure)
+## 1. Backend Overview (Files & Folders Structure)
 
 Backend **FastAPI (Python)** pe bana hua hai. Har folder aur important file ka clear high-level overview neeche diya gaya hai:
 
@@ -68,7 +62,7 @@ Pydantic schemas jo request payloads aur response data ko strictly validate kart
 
 ---
 
-## 🎨 2. Frontend Overview (Halka Sa / High-Level)
+##  2. Frontend Overview 
 
 Frontend **React 18 + TypeScript + Vite + TailwindCSS** ke sath bana ek modern, clean cybersecurity dashboard hai:
 
@@ -86,20 +80,12 @@ frontend/
 └── vite.config.ts    # Vite bundler config aur `/api` proxy setup
 ```
 
-### 🌟 Key Pages:
-1. **`Dashboard.tsx`**: Executive summary jisme risk scores, critical vulnerability trends, open remediation tasks aur severity charts dikhte hain.
-2. **`Vulnerabilities.tsx` & `VulnerabilityDetail.tsx`**: Sabhi detected CVEs ki filtered list, unke technical details, exploit status aur CVSS/EPSS scores.
-3. **`Assets.tsx` & `AssetDetail.tsx`**: Servers, cloud resources aur endpoints ki inventory aur unki criticality mapping.
-4. **`RiskPrioritization.tsx`**: Interactive risk engine interface jahan top prioritized vulnerabilities highlight hoti hain.
-5. **`Login.tsx` / `Register.tsx`**: Role-based authentication screens.
-
----
-
-## 🚀 Quick Run Guide
+##  Quick Run Guide
 
 ### 1. Backend Start Karna
 ```powershell
 # Backend folder me jayein
+cd "vernability risk prioritization tool\backend"
 python seed_data.py
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
@@ -109,6 +95,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ### 2. Frontend Start Karna
 ```powershell
 # Frontend folder me jayein
+cd "vernability risk prioritization tool\frontend"
 npm install
 npm run dev
 ```
