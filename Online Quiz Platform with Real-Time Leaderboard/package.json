@@ -1,0 +1,25 @@
+{
+  "name": "online-quiz-platform-realtime-leaderboard",
+  "version": "1.0.0",
+  "description": "Full-stack College DBMS Project integrating MySQL, Redis, and MongoDB with Real-Time Leaderboard",
+  "scripts": {
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:all": "npm run install:server && npm run install:client",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "seed": "cd server && npm run seed"
+  },
+  "keywords": [
+    "dbms-project",
+    "mysql",
+    "redis",
+    "mongodb",
+    "socketio",
+    "react",
+    "express",
+    "realtime-leaderboard"
+  ],
+  "author": "Mahendra Singh",
+  "license": "MIT"
+}

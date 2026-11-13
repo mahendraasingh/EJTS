@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # MySQL - Primary Relational Database (Users, Quizzes, Questions, Options, Results)
+  # ----------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: quiz_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: quiz_platform_db
+      MYSQL_USER: quiz_user
+      MYSQL_PASSWORD: quiz_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/mysql_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/mysql_seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "quiz_user", "-pquiz_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Redis - In-Memory Fast Cache, ZSET Leaderboards & TTL Quiz Sessions
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: quiz_redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # MongoDB - Document Store for Attempt Histories, Answer Records & Aggregations
+  # ----------------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: quiz_mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo_user
+      MONGO_INITDB_ROOT_PASSWORD: mongo_password
+      MONGO_INITDB_DATABASE: quiz_platform_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Backend API & Real-time Socket.IO Server
+  # ----------------------------------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: quiz_server
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      CLIENT_URL: http://localhost:5173
+      JWT_SECRET: super_secure_jwt_secret_college_dbms_quiz_2026
+      JWT_EXPIRES_IN: 24h
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: quiz_user
+      MYSQL_PASSWORD: quiz_password
+      MYSQL_DATABASE: quiz_platform_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password
+      MONGODB_URI: mongodb://mongo_user:mongo_password@mongodb:27017/quiz_platform_mongo?authSource=admin
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # Frontend Client (React + Vite + Tailwind CSS)
+  # ----------------------------------------------------------------------------
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: quiz_client
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000
+    depends_on:
+      - server
+
+volumes:
+  mysql_data:
+  redis_data:
+  mongodb_data:

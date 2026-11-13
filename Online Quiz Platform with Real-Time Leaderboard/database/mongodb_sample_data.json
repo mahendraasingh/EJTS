@@ -1,0 +1,108 @@
+[
+  {
+    "attemptId": "ATTEMPT_1001",
+    "userId": 2,
+    "studentName": "Rahul Sharma",
+    "quizId": 1,
+    "quizTitle": "DBMS Relational Algebra & Normalization",
+    "category": "Database Management Systems",
+    "startedAt": "2026-11-13T10:00:00.000Z",
+    "submittedAt": "2026-11-13T10:06:52.000Z",
+    "score": 25.0,
+    "totalMarks": 25.0,
+    "timeTaken": 412,
+    "correctCount": 5,
+    "incorrectCount": 0,
+    "unansweredCount": 0,
+    "answers": [
+      {
+        "questionId": 1,
+        "questionText": "Which normal form eliminates partial dependency of non-prime attributes on any candidate key?",
+        "selectedOptionId": 2,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 2,
+        "questionText": "What does the \"I\" stand for in the ACID properties of relational databases?",
+        "selectedOptionId": 6,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 3,
+        "questionText": "In relational algebra, which operator performs a Cartesian product followed by a selection condition?",
+        "selectedOptionId": 9,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 4,
+        "questionText": "Which database index structure is most commonly utilized in MySQL InnoDB for primary keys?",
+        "selectedOptionId": 14,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 5,
+        "questionText": "A relation is in Boyce-Codd Normal Form (BCNF) if and only if for every non-trivial functional dependency X -> Y:",
+        "selectedOptionId": 18,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      }
+    ]
+  },
+  {
+    "attemptId": "ATTEMPT_1002",
+    "userId": 3,
+    "studentName": "Priya Patel",
+    "quizId": 1,
+    "quizTitle": "DBMS Relational Algebra & Normalization",
+    "category": "Database Management Systems",
+    "startedAt": "2026-11-13T10:15:00.000Z",
+    "submittedAt": "2026-11-13T10:23:50.000Z",
+    "score": 18.75,
+    "totalMarks": 25.0,
+    "timeTaken": 530,
+    "correctCount": 4,
+    "incorrectCount": 1,
+    "unansweredCount": 0,
+    "answers": [
+      {
+        "questionId": 1,
+        "questionText": "Which normal form eliminates partial dependency of non-prime attributes on any candidate key?",
+        "selectedOptionId": 2,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 2,
+        "questionText": "What does the \"I\" stand for in the ACID properties of relational databases?",
+        "selectedOptionId": 6,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 3,
+        "questionText": "In relational algebra, which operator performs a Cartesian product followed by a selection condition?",
+        "selectedOptionId": 9,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      },
+      {
+        "questionId": 4,
+        "questionText": "Which database index structure is most commonly utilized in MySQL InnoDB for primary keys?",
+        "selectedOptionId": 13,
+        "isCorrect": false,
+        "marksAwarded": -1.25
+      },
+      {
+        "questionId": 5,
+        "questionText": "A relation is in Boyce-Codd Normal Form (BCNF) if and only if for every non-trivial functional dependency X -> Y:",
+        "selectedOptionId": 18,
+        "isCorrect": true,
+        "marksAwarded": 5.0
+      }
+    ]
+  }
+]
