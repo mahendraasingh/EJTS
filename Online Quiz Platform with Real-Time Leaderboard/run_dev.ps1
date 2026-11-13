@@ -1,4 +1,4 @@
-﻿Write-Host "========================================================================" -ForegroundColor Cyan
+Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host " Starting Online Quiz Platform with Real-Time Leaderboard " -ForegroundColor Green
 Write-Host "========================================================================" -ForegroundColor Cyan
 
@@ -21,3 +21,4 @@ Write-Host "   Administrator:  admin@quiz.com / password123" -ForegroundColor Wh
 Write-Host "   Student 1:      rahul@student.com / password123" -ForegroundColor White
 Write-Host "   Student 2:      priya@student.com / password123" -ForegroundColor White
 Write-Host "========================================================================`n" -ForegroundColor Cyan
+
