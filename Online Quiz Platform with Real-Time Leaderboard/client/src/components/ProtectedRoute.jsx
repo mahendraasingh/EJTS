@@ -42,3 +42,4 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
+

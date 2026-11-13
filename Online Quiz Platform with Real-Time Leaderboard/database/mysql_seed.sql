@@ -151,3 +151,4 @@ INSERT INTO quiz_participants (participant_id, quiz_id, user_id, status) VALUES
 INSERT INTO quiz_results (result_id, quiz_id, user_id, score, total_questions, correct_answers, incorrect_answers, unanswered_questions, time_taken_seconds) VALUES
 (1, 1, 2, 23.75, 5, 5, 0, 0, 412),
 (2, 1, 3, 18.50, 5, 4, 1, 0, 530);
+

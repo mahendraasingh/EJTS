@@ -124,3 +124,4 @@ Because distributed transactions (two-phase commits) across relational, in-memor
    - MongoDB attempt insertion is executed within a try/catch guard.
    - Redis Sorted Set updates are executed next.
    - In the event of a cache or document network glitch, MySQL's certified result record remains intact. The `hydrateLeaderboardFromMySQL()` fallback method reconstructs Redis Sorted Sets on demand upon cache misses.
+

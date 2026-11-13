@@ -22,3 +22,4 @@ router.post('/:quizId/submit', attemptController.submitQuiz);
 router.get('/:quizId/result', attemptController.getResult);
 
 module.exports = router;
+

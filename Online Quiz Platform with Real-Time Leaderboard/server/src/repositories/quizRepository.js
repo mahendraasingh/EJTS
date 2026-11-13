@@ -140,3 +140,4 @@ class QuizRepository {
 }
 
 module.exports = new QuizRepository();
+

@@ -135,3 +135,4 @@ CREATE TABLE IF NOT EXISTS quiz_results (
     INDEX idx_results_quiz_score (quiz_id, score DESC, time_taken_seconds ASC),
     INDEX idx_results_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

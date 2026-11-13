@@ -16,3 +16,4 @@ router.get('/:quizId', leaderboardController.getQuizLeaderboard);
 router.get('/:quizId/me', leaderboardController.getMyRank);
 
 module.exports = router;
+

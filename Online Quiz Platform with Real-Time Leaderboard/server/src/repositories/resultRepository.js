@@ -102,3 +102,4 @@ class ResultRepository {
 }
 
 module.exports = new ResultRepository();
+

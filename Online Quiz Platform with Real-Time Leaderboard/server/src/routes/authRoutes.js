@@ -34,3 +34,4 @@ router.post(
 router.get('/me', authenticateToken, authController.getMe);
 
 module.exports = router;
+

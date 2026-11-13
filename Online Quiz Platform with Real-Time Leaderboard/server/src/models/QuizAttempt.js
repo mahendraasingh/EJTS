@@ -113,3 +113,4 @@ QuizAttemptSchema.index({ quizId: 1, score: -1, timeTaken: 1 });
 QuizAttemptSchema.index({ quizId: 1, submittedAt: -1 });
 
 module.exports = mongoose.model('QuizAttempt', QuizAttemptSchema);
+

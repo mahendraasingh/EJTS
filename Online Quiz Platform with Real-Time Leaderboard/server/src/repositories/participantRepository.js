@@ -42,3 +42,4 @@ class ParticipantRepository {
 }
 
 module.exports = new ParticipantRepository();
+

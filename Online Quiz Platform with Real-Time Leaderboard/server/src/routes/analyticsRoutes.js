@@ -20,3 +20,4 @@ router.get('/admin/categories', authorizeRoles('admin'), analyticsController.get
 router.get('/admin/students', authorizeRoles('admin'), analyticsController.getAllStudents);
 
 module.exports = router;
+
