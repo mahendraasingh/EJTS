@@ -8,4 +8,10 @@ __pycache__/
 instance/
 *.pt
 .env
+.env.local
 .vscode/
+node_modules/
+dist/
+build/
+*.log
+.DS_Store

@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "Online Quiz Platform with Real-Time Leaderboard API",
+    "description": "Postman Collection for College DBMS Project demonstrating MySQL, Redis, and MongoDB integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Student",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/register" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahul Sharma\",\n  \"email\": \"rahul@student.com\",\n  \"password\": \"password123\",\n  \"role\": \"student\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "  pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/login" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@quiz.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Profile (/auth/me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Quizzes",
+      "item": [
+        {
+          "name": "Get All Quizzes",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/quizzes" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Quiz By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/quizzes/1" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Create Quiz (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/quizzes" },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Distributed Database Systems\",\n  \"description\": \"CAP theorem, 2PC, Raft consensus, and partitioning.\",\n  \"categoryId\": 1,\n  \"durationMinutes\": 15,\n  \"totalMarks\": 25,\n  \"negativeMarking\": 0.25,\n  \"status\": \"active\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Participation & Sessions",
+      "item": [
+        {
+          "name": "Join Quiz (Start Redis TTL Session)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/attempts/1/join" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Record Answer in Session",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/attempts/1/answer" },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionId\": 1,\n  \"selectedOptionId\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit Quiz (ACID & Real-Time Sync)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/attempts/1/submit" },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"1\": 2,\n    \"2\": 6,\n    \"3\": 9,\n    \"4\": 14,\n    \"5\": 18\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Leaderboard & Analytics",
+      "item": [
+        {
+          "name": "Get Top 10 Leaderboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/leaderboard/1?limit=10" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Admin Analytical Overview",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/analytics/admin/overview" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Quiz Question Accuracy (MongoDB Aggregation)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/analytics/admin/quizzes/1" },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}
